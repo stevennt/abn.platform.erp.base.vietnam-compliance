@@ -1,0 +1,141 @@
+{
+ "actions": [],
+ "creation": "2026-06-28 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enable_e_invoice",
+  "sandbox_mode",
+  "column_break_api",
+  "gdt_api_url",
+  "gdt_sandbox_url",
+  "auto_generate_e_invoice",
+  "auto_cancel_e_invoice",
+  "restrict_cancel_if_e_invoice_final",
+  "column_break_einv",
+  "e_invoice_reporting_time_limit_days",
+  "enable_retry_generation",
+  "section_break_creds",
+  "gdt_username",
+  "gdt_password",
+  "column_break_auth",
+  "signing_provider"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enable_e_invoice",
+   "fieldtype": "Check",
+   "label": "Enable E-Invoice"
+  },
+  {
+   "default": "1",
+   "fieldname": "sandbox_mode",
+   "fieldtype": "Check",
+   "label": "Sandbox Mode"
+  },
+  {
+   "fieldname": "column_break_api",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "https://hoadondientutest.gdt.gov.vn",
+   "fieldname": "gdt_sandbox_url",
+   "fieldtype": "Data",
+   "label": "GDT Sandbox URL"
+  },
+  {
+   "default": "https://hoadondientu.gdt.gov.vn",
+   "fieldname": "gdt_api_url",
+   "fieldtype": "Data",
+   "label": "GDT API URL"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.enable_e_invoice",
+   "fieldname": "auto_generate_e_invoice",
+   "fieldtype": "Check",
+   "label": "Auto Generate on Submit"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.enable_e_invoice",
+   "fieldname": "auto_cancel_e_invoice",
+   "fieldtype": "Check",
+   "label": "Auto Cancel on Cancel"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.enable_e_invoice",
+   "fieldname": "restrict_cancel_if_e_invoice_final",
+   "fieldtype": "Check",
+   "label": "Restrict Cancel if Final"
+  },
+  {
+   "fieldname": "column_break_einv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "30",
+   "fieldname": "e_invoice_reporting_time_limit_days",
+   "fieldtype": "Int",
+   "label": "Time Limit (days)"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_retry_generation",
+   "fieldtype": "Check",
+   "label": "Enable Auto Retry"
+  },
+  {
+   "fieldname": "section_break_creds",
+   "fieldtype": "Section Break",
+   "label": "GDT Credentials"
+  },
+  {
+   "fieldname": "gdt_username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "fieldname": "gdt_password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "fieldname": "column_break_auth",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "mock",
+   "fieldname": "signing_provider",
+   "fieldtype": "Select",
+   "label": "Signing Provider",
+   "options": "mock\nvnpt\nviettel\nbkav"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-28 00:00:00",
+ "modified_by": "Administrator",
+ "module": "VAT Vietnam",
+ "name": "Tax Department Config",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

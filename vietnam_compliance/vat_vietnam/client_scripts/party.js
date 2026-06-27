@@ -1,37 +1,29 @@
-const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-
-function update_gstin_in_other_documents(doctype) {
+function update_mst_in_other_documents(doctype) {
     frappe.ui.form.on(doctype, {
         after_save(frm) {
-            // docs to be updated attached to previous response
-            const { docs_with_previous_gstin, previous_gstin } = frappe.last_response;
-            if (!docs_with_previous_gstin) return;
+            const { docs_with_previous_mst, previous_mst } = frappe.last_response || {};
+            if (!docs_with_previous_mst) return;
 
-            const { gstin, gst_category } = frm.doc;
+            const { mst } = frm.doc;
             let message = __(
-                "You were using the GSTIN <strong>{0}</strong> in the following other documents:<br>",
-                [previous_gstin],
+                "Bạn đang dùng MST <strong>{0}</strong> trong các chứng từ sau:<br>",
+                [previous_mst]
             );
 
-            for (const [doctype, docnames] of Object.entries(docs_with_previous_gstin)) {
+            for (const [doctype, docnames] of Object.entries(docs_with_previous_mst)) {
                 message += `<br><strong>${__(doctype)}</strong>:<br>`;
-
                 docnames.forEach((docname) => {
                     message += `${frappe.utils.get_form_link(doctype, docname, true)}<br>`;
                 });
             }
-            message += `<br>Do you want to update these with the following new values?
-                        <br>
-                        <br><strong>GSTIN:</strong> ${gstin || "&lt;empty&gt;"}
-                        <br><strong>GST Category:</strong> ${gst_category}`;
+            message += `<br>Bạn có muốn cập nhật MST mới?<br><br><strong>MST:</strong> ${mst || "&lt;trống&gt;"}`;
 
             frappe.confirm(message, function () {
                 frappe.call({
-                    method: "vietnam_compliance.vat_vietnam.overrides.party.update_docs_with_previous_gstin",
+                    method: "vietnam_compliance.vat_vietnam.overrides.party.update_docs_with_previous_mst",
                     args: {
-                        gstin: gstin || "",
-                        gst_category,
-                        docs_with_previous_gstin,
+                        mst: mst || "",
+                        docs_with_previous_mst,
                     },
                 });
             });
@@ -39,128 +31,14 @@ function update_gstin_in_other_documents(doctype) {
     });
 }
 
-function validate_gstin(doctype) {
-    frappe.ui.form.on(doctype, {
-        gstin(frm) {
-            let { gstin } = frm.doc;
-
-            // TODO: remove below condition once event is fixed in frappe
-            if (!gstin || gstin.length < 15) return;
-
-            if (gstin.length > 15) {
-                frappe.throw(__("GSTIN/UIN should be 15 characters long"));
-            }
-
-            gstin = vietnam_compliance.validate_gstin(gstin);
-
-            frm.doc.gstin = gstin;
-            frm.refresh_field("gstin");
-
-            vietnam_compliance.check_duplicate_gstin(gstin, frm.doctype, frm.docname);
-
-            if (!frm.fields_dict.pan) return;
-
-            // extract PAN from GSTIN
-            const pan = frm.doc.gstin.slice(2, 12);
-
-            if (PAN_REGEX.test(pan)) {
-                frm.doc.pan = pan;
-                frm.refresh_field("pan");
-                set_party_type(frm);
-                // if (doctype != "Address") {
-                //     vietnam_compliance.set_pan_status(frm.get_field("pan"));
-                // }
-            }
-        },
-    });
+function validate_mst_input(doc, cdt, cdn) {
+    const d = locals[cdt][cdn];
+    if (d.mst && !/^\d{10}(\d{3})?$/.test(d.mst)) {
+        frappe.msgprint(__("Mã số thuế không hợp lệ. Phải có 10 hoặc 13 chữ số."));
+        frappe.validated = false;
+    }
 }
 
-function validate_pan(doctype) {
-    frappe.ui.form.on(doctype, {
-        pan(frm) {
-            let { pan } = frm.doc;
-            if (!pan || pan.length < 10) return;
-
-            pan = vietnam_compliance.validate_pan(pan);
-
-            frm.doc.pan = pan;
-            frm.refresh_field("pan");
-
-            vietnam_compliance.check_duplicate_pan(pan, frm.doctype, frm.docname);
-            set_party_type(frm);
-        },
-    });
-}
-
-function show_overseas_disabled_warning(doctype) {
-    frappe.ui.form.on(doctype, {
-        after_save(frm) {
-            if (
-                !gst_settings.enable_overseas_transactions &&
-                ["SEZ", "Overseas"].includes(frm.doc.gst_category)
-            ) {
-                frappe.msgprint({
-                    message: __(
-                        `SEZ/Overseas transactions are disabled in GST Settings.
-                        Please enable this setting to create transactions for this party.`,
-                    ),
-                    indicator: "orange",
-                });
-            }
-        },
-    });
-}
-
-function set_gstin_options_and_status(doctype) {
-    frappe.ui.form.on(doctype, {
-        refresh(frm) {
-            set_gstin_options(frm);
-            vietnam_compliance.set_gstin_status(frm.get_field("gstin"), frm.doc);
-        },
-        gstin(frm) {
-            vietnam_compliance.set_gstin_status(frm.get_field("gstin"), frm.doc);
-        },
-    });
-}
-
-// function set_pan_status(doctype) {
-//     frappe.ui.form.on(doctype, {
-//         refresh(frm) {
-//             vietnam_compliance.set_pan_status(frm.get_field("pan"));
-//         },
-//         pan(frm) {
-//             vietnam_compliance.set_pan_status(frm.get_field("pan"));
-//         },
-//     });
-// }
-
-async function set_gstin_options(frm) {
-    if (frm.is_new() || frm._gstin_options_set_for === frm.doc.name) return;
-
-    frm._gstin_options_set_for = frm.doc.name;
-    const field = frm.get_field("gstin");
-    if (!field || field.df.fieldtype != "Autocomplete") return;
-    field.df.ignore_validation = true;
-    field.set_data(await vietnam_compliance.get_gstin_options(frm.doc.name, frm.doctype));
-}
-
-function set_gst_category(doctype) {
-    frappe.ui.form.on(doctype, {
-        gstin(frm) {
-            frm.set_value(
-                "gst_category",
-                vietnam_compliance.guess_gst_category(frm.doc.gstin, frm.doc.country),
-            );
-        },
-    });
-}
-
-function set_party_type(frm) {
-    if (!["Customer", "Supplier"].includes(frm.doc.doctype)) return;
-    pan_to_party_type_map = {
-        F: "Partnership",
-        C: "Company",
-    };
-    const party_type = frm.doc.doctype === "Customer" ? "customer_type" : "supplier_type";
-    frm.set_value(party_type, pan_to_party_type_map[frm.doc.pan[3]] || "Individual");
-}
+update_mst_in_other_documents("Customer");
+update_mst_in_other_documents("Supplier");
+update_mst_in_other_documents("Company");

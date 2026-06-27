@@ -1,0 +1,102 @@
+{
+ "actions": [],
+ "autoname": "field:mst",
+ "creation": "2026-06-28 00:00:00",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "mst",
+  "company",
+  "status",
+  "column_break_info",
+  "registration_date",
+  "digital_certificate_ref",
+  "section_break_auth",
+  "gdt_username",
+  "gdt_password"
+ ],
+ "fields": [
+  {
+   "fieldname": "mst",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "M\u00e3 s\u1ed1 thu\u1ebf (MST)",
+   "length": 13,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nActive\nInactive\nSuspended"
+  },
+  {
+   "fieldname": "column_break_info",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "registration_date",
+   "fieldtype": "Date",
+   "label": "Registration Date"
+  },
+  {
+   "fieldname": "digital_certificate_ref",
+   "fieldtype": "Data",
+   "label": "Digital Certificate Ref",
+   "description": "USB Token ID or HSM key reference"
+  },
+  {
+   "fieldname": "section_break_auth",
+   "fieldtype": "Section Break",
+   "label": "GDT Portal Credentials"
+  },
+  {
+   "fieldname": "gdt_username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "fieldname": "gdt_password",
+   "fieldtype": "Password",
+   "label": "Password"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-28 00:00:00",
+ "modified_by": "Administrator",
+ "module": "VAT Vietnam",
+ "name": "MST",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

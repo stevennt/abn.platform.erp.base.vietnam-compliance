@@ -1,0 +1,180 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-06-28 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "transaction_id",
+  "reference_doctype",
+  "reference_name",
+  "einvoice_status",
+  "column_break_main",
+  "acknowledgement_number",
+  "acknowledged_on",
+  "is_generated_in_sandbox_mode",
+  "section_break_data",
+  "invoice_data",
+  "signed_invoice",
+  "signed_qr_code",
+  "section_break_cancel",
+  "is_cancelled",
+  "cancelled_on",
+  "column_break_cancel",
+  "cancel_reason_code",
+  "cancel_remark"
+ ],
+ "fields": [
+  {
+   "fieldname": "transaction_id",
+   "fieldtype": "Data",
+   "label": "Transaction ID (M\u00e3 tra c\u1ee9u)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference DocType",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference Name",
+   "options": "reference_doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "einvoice_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Tr\u1ea1ng th\u00e1i H\u0110\u0110T",
+   "options": "\nCh\u1edd g\u1eedi\n\u0110\u00e3 g\u1eedi CQT\nCQT c\u1ea5p m\u00e3\n\u0110\u00e3 c\u00f3 m\u00e3\nL\u1ed7i\n\u0110\u00e3 h\u1ee7y\nT\u1ea1o th\u1ee7 c\u00f4ng\nCh\u1edd h\u1ee7y\nKh\u00f4ng \u00e1p d\u1ee5ng"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "acknowledgement_number",
+   "fieldtype": "Data",
+   "label": "Acknowledgement Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "acknowledged_on",
+   "fieldtype": "Datetime",
+   "label": "Acknowledged On",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_generated_in_sandbox_mode",
+   "fieldtype": "Check",
+   "label": "Generated in Sandbox",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_data",
+   "fieldtype": "Section Break",
+   "label": "Data"
+  },
+  {
+   "fieldname": "invoice_data",
+   "fieldtype": "Code",
+   "label": "Invoice Data (XML)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_invoice",
+   "fieldtype": "Code",
+   "hidden": 1,
+   "label": "Signed Invoice (XML)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_qr_code",
+   "fieldtype": "Code",
+   "hidden": 1,
+   "label": "QR Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_cancel",
+   "fieldtype": "Section Break",
+   "label": "Cancellation Details"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_cancelled",
+   "fieldtype": "Check",
+   "label": "Is Cancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cancelled_on",
+   "fieldtype": "Datetime",
+   "label": "Cancelled On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_cancel",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cancel_reason_code",
+   "fieldtype": "Select",
+   "label": "Reason Code",
+   "options": "\nSai th\u00f4ng tin\nH\u1ee7y \u0111\u01a1n h\u00e0ng\nSai s\u00f3t nghi\u1ec7p v\u1ee5\nKh\u00e1c",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cancel_remark",
+   "fieldtype": "Small Text",
+   "label": "Remark",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "group": "GDT Logs",
+   "link_doctype": "Sales Invoice",
+   "link_fieldname": "reference_name"
+  }
+ ],
+ "max_attachments": 2,
+ "modified": "2026-06-28 00:00:00",
+ "modified_by": "Administrator",
+ "module": "VAT Vietnam",
+ "name": "EInvoice Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Accounts User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
