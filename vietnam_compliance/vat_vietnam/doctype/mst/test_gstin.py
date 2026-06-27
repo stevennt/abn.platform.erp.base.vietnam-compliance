@@ -4,15 +4,15 @@ import responses
 from frappe.tests import IntegrationTestCase, change_settings
 from responses import matchers
 
-from vietnam_compliance.vat_vietnam.doctype.gstin.gstin import validate_gst_transporter_id
+from vietnam_compliance.vat_vietnam.doctype.mst.mst import validate_gst_transporter_id
 
-TEST_GSTIN = "24AANFA2641L1ZK"
+TEST_MST = "24AANFA2641L1ZK"
 
 TRANSPORTER_ID_API_RESPONSE = {
     "success": True,
     "message": "Transporter details are fetched successfully",
     "result": {
-        "transin": TEST_GSTIN,
+        "transin": TEST_MST,
         "tradeName": "_Test Transporter ID Comapany",
         "legalName": "_Test Transporter ID Comapany",
         "address1": "address 1",
@@ -23,17 +23,17 @@ TRANSPORTER_ID_API_RESPONSE = {
 }
 
 
-class TestGSTIN(IntegrationTestCase):
+class TestMST(IntegrationTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
 
     @responses.activate
-    @change_settings("GST Settings", {"validate_gstin_status": 1, "sandbox_mode": 0})
+    @change_settings("GST Settings", {"validate_mst_status": 1, "sandbox_mode": 0})
     def test_validate_gst_transporter_id(self):
         self.mock_get_transporter_details_response()
 
-        validate_gst_transporter_id(TEST_GSTIN)
+        validate_gst_transporter_id(TEST_MST)
 
     def mock_get_transporter_details_response(self):
         url = "https://asp.resilient.tech/ewb/Master/GetTransporterDetails"
@@ -42,6 +42,6 @@ class TestGSTIN(IntegrationTestCase):
             responses.GET,
             url,
             json=TRANSPORTER_ID_API_RESPONSE,
-            match=[matchers.query_param_matcher({"trn_no": TEST_GSTIN})],
+            match=[matchers.query_param_matcher({"trn_no": TEST_MST})],
             status=200,
         )

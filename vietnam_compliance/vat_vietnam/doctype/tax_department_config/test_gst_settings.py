@@ -14,13 +14,13 @@ class TestGSTSettings(IntegrationTestCase):
     def setUpClass(cls):
         super().setUpClass()
 
-    @change_settings("GST Settings", {"enable_api": 1})
+    @change_settings("Tax Department Config", {"enable_api": 1})
     def test_api_key_enabled(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.save()
 
     def test_validate_duplicate_account(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.append(
             "gst_accounts",
             {
@@ -39,7 +39,7 @@ class TestGSTSettings(IntegrationTestCase):
         # Validate Duplicate Account Types for each Company
 
     def test_validate_duplicate_account_type_for_each_company(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         for row in doc.gst_accounts:
             if (
                 row.company == "_Test Indian Registered Company"
@@ -54,11 +54,11 @@ class TestGSTSettings(IntegrationTestCase):
                 break
 
     @change_settings(
-        "GST Settings",
+        "Tax Department Config",
         {"enable_e_invoice": 1, "apply_e_invoice_only_for_selected_companies": 0},
     )
     def test_validate_e_invoice_applicability_date(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.enable_e_invoice = 1
         doc.e_invoice_applicable_from = ""
         doc.apply_e_invoice_only_for_selected_companies = 0
@@ -70,7 +70,7 @@ class TestGSTSettings(IntegrationTestCase):
             doc.save,
         )
 
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.e_invoice_applicable_from = getdate("2020-01-01")
 
         self.assertRaisesRegex(
@@ -79,7 +79,7 @@ class TestGSTSettings(IntegrationTestCase):
             doc.save,
         )
 
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.apply_e_invoice_only_for_selected_companies = 1
         company = {
             "company": "_Test Indian Registered Company",
@@ -88,9 +88,9 @@ class TestGSTSettings(IntegrationTestCase):
         doc.append("e_invoice_applicable_companies", company)
         doc.save()
 
-    @change_settings("GST Settings", {"enable_api": 1})
+    @change_settings("Tax Department Config", {"enable_api": 1})
     def test_validate_credentials(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.append(
             "credentials",
             {
@@ -106,7 +106,7 @@ class TestGSTSettings(IntegrationTestCase):
             doc.save,
         )
 
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.append(
             "credentials",
             {
@@ -118,7 +118,7 @@ class TestGSTSettings(IntegrationTestCase):
         )
         doc.save()
 
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.append(
             "credentials",
             {
@@ -132,13 +132,13 @@ class TestGSTSettings(IntegrationTestCase):
         doc.save()
 
     @change_settings(
-        "GST Settings",
+        "Tax Department Config",
         {"enable_api": 1, "enable_e_waybill": 1, "sandbox_mode": 0},
     )
     def test_no_credentials_warning_on_unrelated_update(self):
         frappe.clear_messages()
 
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.archive_party_info_days = 10 if doc.archive_party_info_days != 10 else 7
         doc.save()
 
@@ -151,7 +151,7 @@ class TestGSTSettings(IntegrationTestCase):
             self.assertNotIn("Please set credentials for e-Waybill / e-Invoice", message_text)
 
     def test_validate_enable_api(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.enable_api = 1
         frappe.conf.ic_api_secret = None
         self.assertRaisesRegex(
@@ -160,9 +160,9 @@ class TestGSTSettings(IntegrationTestCase):
             doc.validate_enable_api,
         )
 
-    @change_settings("GST Settings", {"enable_e_invoice": 1})
+    @change_settings("Tax Department Config", {"enable_e_invoice": 1})
     def test_validate_e_invoice_applicable_companies_without_applicable_from(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.append(
             "e_invoice_applicable_companies",
             {"company": "_Test Indian Registered Company"},
@@ -173,9 +173,9 @@ class TestGSTSettings(IntegrationTestCase):
             doc.validate_e_invoice_applicable_companies,
         )
 
-    @change_settings("GST Settings", {"enable_e_invoice": 1})
+    @change_settings("Tax Department Config", {"enable_e_invoice": 1})
     def test_validate_company_in_e_invoice_applicable_company(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.apply_e_invoice_only_for_selected_companies = 1
         doc.e_invoice_applicable_companies = []
         self.assertRaisesRegex(
@@ -184,9 +184,9 @@ class TestGSTSettings(IntegrationTestCase):
             doc.validate_e_invoice_applicable_companies,
         )
 
-    @change_settings("GST Settings", {"enable_e_invoice": 1})
+    @change_settings("Tax Department Config", {"enable_e_invoice": 1})
     def test_validate_e_invoice_applicable_companies_with_applicable_from(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.append(
             "e_invoice_applicable_companies",
             {
@@ -207,9 +207,9 @@ class TestGSTSettings(IntegrationTestCase):
             doc.validate_e_invoice_applicable_companies,
         )
 
-    @change_settings("GST Settings", {"enable_e_invoice": 1})
+    @change_settings("Tax Department Config", {"enable_e_invoice": 1})
     def test_validate_applicable_from_in_e_invoice(self):
-        doc = frappe.get_doc("GST Settings")
+        doc = frappe.get_doc("Tax Department Config")
         doc.append(
             "e_invoice_applicable_companies",
             {

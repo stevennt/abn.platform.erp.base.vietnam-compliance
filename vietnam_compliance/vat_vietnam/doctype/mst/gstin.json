@@ -1,12 +1,12 @@
 {
  "actions": [],
- "autoname": "field:gstin",
+ "autoname": "field:mst",
  "creation": "2023-06-19 18:16:47.324987",
  "default_view": "List",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "gstin",
+  "mst",
   "registration_date",
   "status",
   "transporter_id_status",
@@ -20,10 +20,10 @@
  ],
  "fields": [
   {
-   "fieldname": "gstin",
+   "fieldname": "mst",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "GSTIN",
+   "label": "MST",
    "reqd": 1,
    "unique": 1
   },
@@ -32,7 +32,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "GSTIN Status"
+   "label": "MST Status"
   },
   {
    "fieldname": "registration_date",
@@ -91,8 +91,8 @@
  "links": [],
  "modified": "2024-09-04 17:12:30.951878",
  "modified_by": "Administrator",
- "module": "GST India",
- "name": "GSTIN",
+ "module": "MSTdia",
+ "name": "MST",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
@@ -124,5 +124,5 @@
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
- "title_field": "gstin"
+ "title_field": "mst"
 }

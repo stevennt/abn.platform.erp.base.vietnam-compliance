@@ -249,7 +249,7 @@ class GSTSettings(Document):
                     "For more information, refer to the following documentation: {0}"
                 ).format(
                     """
-                <a href="https://docs.indiacompliance.app/docs/ewaybill-and-einvoice/gst_settings" target="_blank">
+                <a href="https://docs.indiacompliance.app/docs/ewaybill-and-einvoice/tax_department_config" target="_blank">
                     Setup Credentials for e-Waybill / e-Invoice
                 </a>
                 """
@@ -334,7 +334,7 @@ class GSTSettings(Document):
 
         else:
             if throw:
-                frappe.throw(_("No credential found for the GSTIN {0} in the GST Settings").format(gstin))
+                frappe.throw(_("No credential found for the GSTIN {0} in the Tax Department Config").format(gstin))
 
             return False
 
@@ -348,7 +348,7 @@ class GSTSettings(Document):
             if credential.gstin == gstin and credential.service == service:
                 break
         else:
-            message = _("No credential found for the GSTIN {0} in the GST Settings").format(gstin)
+            message = _("No credential found for the GSTIN {0} in the Tax Department Config").format(gstin)
 
             if throw:
                 frappe.throw(message)
@@ -371,7 +371,7 @@ class GSTSettings(Document):
                     "show_missing_gst_credentials_message",
                     dict(
                         message=_(
-                            "Credentials are missing for GSTIN {0} for service Returns in GST Settings"
+                            "Credentials are missing for GSTIN {0} for service Returns in Tax Department Config"
                         ).format(gstin),
                         title=_("Missing Credentials"),
                     ),
@@ -385,13 +385,13 @@ class GSTSettings(Document):
 
 @frappe.whitelist()
 def disable_api_promo():
-    if frappe.has_permission("GST Settings", "write"):
+    if frappe.has_permission("Tax Department Config", "write"):
         _disable_api_promo()
 
 
 @frappe.whitelist()
 def enqueue_update_gst_category():
-    frappe.has_permission("GST Settings", "write", throw=True)
+    frappe.has_permission("Tax Department Config", "write", throw=True)
     frappe.enqueue(update_gst_category, queue="long", timeout=6000)
     frappe.msgprint(
         _("Updating GST Category in background"),
@@ -442,12 +442,12 @@ def update_e_invoice_status():
     - Update "Pending" and "Not Applicable" Status
     """
 
-    gst_settings = frappe.get_cached_doc("GST Settings")
-    if not gst_settings.enable_e_invoice:
+    tax_department_config = frappe.get_cached_doc("Tax Department Config")
+    if not tax_department_config.enable_e_invoice:
         return update_not_applicable_status()
 
-    if not gst_settings.apply_e_invoice_only_for_selected_companies:
-        e_invoice_applicability_date = gst_settings.e_invoice_applicable_from
+    if not tax_department_config.apply_e_invoice_only_for_selected_companies:
+        e_invoice_applicability_date = tax_department_config.e_invoice_applicable_from
         update_pending_status(e_invoice_applicability_date)
         update_not_applicable_status(e_invoice_applicability_date)
         return
@@ -455,7 +455,7 @@ def update_e_invoice_status():
     companies = frappe.get_all("Company", filters={"country": "India"}, pluck="name")
 
     for company in companies:
-        e_invoice_applicability_date = get_e_invoice_applicability_date(company, gst_settings, throw=False)
+        e_invoice_applicability_date = get_e_invoice_applicability_date(company, tax_department_config, throw=False)
 
         update_pending_status(e_invoice_applicability_date, company)
         update_not_applicable_status(e_invoice_applicability_date, company)
@@ -463,7 +463,7 @@ def update_e_invoice_status():
 
 def get_e_invoice_applicability_date(company, settings=None, throw=True):
     if not settings:
-        settings = frappe.get_cached_doc("GST Settings")
+        settings = frappe.get_cached_doc("Tax Department Config")
 
     e_invoice_applicable_from = settings.e_invoice_applicable_from
 
@@ -500,8 +500,8 @@ def update_pending_status(e_invoice_applicability_date, company=None):
         .where(sales_invoice.is_opening != "Yes")
     )
 
-    gst_settings = frappe.get_cached_doc("GST Settings")
-    if gst_settings.nil_exempt_e_invoice_treatment == "Do Not Generate":
+    tax_department_config = frappe.get_cached_doc("Tax Department Config")
+    if tax_department_config.nil_exempt_e_invoice_treatment == "Do Not Generate":
         sales_invoice_item = frappe.qb.DocType("Sales Invoice Item")
         query = (
             query.join(sales_invoice_item)
@@ -532,19 +532,19 @@ def update_not_applicable_status(e_invoice_applicability_date=None, company=None
     query.run()
 
 
-def restrict_gstr_1_transaction_for(doc, gst_settings=None, action="submit"):
+def restrict_gstr_1_transaction_for(doc, tax_department_config=None, action="submit"):
     """
     Check if the user is allowed to modify transactions before the GSTR-1 filing date
     Additionally, update the `is_not_latest_gstr1_data` field in the GST Return Log
     """
     posting_date = getdate(doc.posting_date)
 
-    if not gst_settings:
-        gst_settings = frappe.get_cached_doc("GST Settings")
+    if not tax_department_config:
+        tax_department_config = frappe.get_cached_doc("Tax Department Config")
 
     restrict = True
 
-    if not gst_settings.restrict_changes_after_gstr_1:
+    if not tax_department_config.restrict_changes_after_gstr_1:
         update_is_not_latest_gstr1_data(posting_date, doc.company_gstin)
         return
 
@@ -556,7 +556,7 @@ def restrict_gstr_1_transaction_for(doc, gst_settings=None, action="submit"):
     elif posting_date > getdate(gstr_1_filed_upto):
         restrict = False
 
-    if gst_settings.role_allowed_to_modify in frappe.get_roles() or frappe.session.user == "Administrator":
+    if tax_department_config.role_allowed_to_modify in frappe.get_roles() or frappe.session.user == "Administrator":
         restrict = False
 
     if restrict:

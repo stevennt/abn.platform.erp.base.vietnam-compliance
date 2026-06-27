@@ -140,11 +140,16 @@
 
 ### GP-GOAL-002: Vietnam constants — provinces, tax rates, invoice types, form templates
 
-- STATUS: `TODO`
+- STATUS: `DONE`
 - PRIORITY: `P0`
 - SOURCE: `user`
 - GOAL_TYPE: `technical-enabler`
-- PRIMARY_OUTCOME: `vat_vietnam/constants/` contains Vietnam-specific data: 63 provinces, VAT rates (0%, 5%, 8%, 10%), invoice types, form templates, cancellation reason codes.
+- PRIMARY_OUTCOME: `vat_vietnam/constants/` contains Vietnam-specific data: 63 provinces, VAT rates (0%, 5%, 8%, 10%), invoice types, form templates.
+- PROGRESS_PERCENT: `100%`
+- PROGRESS_SOURCE: `GDA completed — commit 1576880a`
+- PROGRESS_UPDATED: 2026-06-27T12:35:00Z
+- RESULT_SUMMARY: Replaced 1490-line India constants with Vietnam data. 63 provinces, VAT rates, invoice types, form templates, statuses, MST format, GDT URLs. Deleted India e_waybill constants.
+- LAST_UPDATED: 2026-06-27T12:35:00Z
 - USER_OUTCOME: `N/A - technical-oriented goal with no direct end-user action`
 - USER_STORY: `N/A - see TECHNICAL_OUTCOME and TECHNICAL_RATIONALE`
 - TECHNICAL_OUTCOME: `vat_vietnam/constants/__init__.py` exports PROVINCES (63 provinces + GDT codes), VAT_RATES, INVOICE_TYPES, INVOICE_FORM_TEMPLATES, CANCEL_REASON_CODES, EINVOICE_STATUSES replacing India's STATE_NUMBERS, GST_CATEGORIES, HSN constants, etc.
