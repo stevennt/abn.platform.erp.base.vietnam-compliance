@@ -12,3 +12,4 @@ india_compliance/docs/current
 # JS
 dist/
 node_modules
+bench/

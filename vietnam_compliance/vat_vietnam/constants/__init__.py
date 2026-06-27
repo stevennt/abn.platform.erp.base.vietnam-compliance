@@ -152,3 +152,16 @@ VALID_VAT_LENGTHS = [10, 13]
 GDT_API_URL = "https://hoadondientu.gdt.gov.vn"
 
 GDT_SANDBOX_URL = "https://hoadondientutest.gdt.gov.vn"
+BUG_REPORT_URL = "https://github.com/stevennt/abn.platform.erp.base.vietnam-compliance/issues"
+
+GST_UOMS = {}
+GST_ACCOUNT_FIELDS = ("vat_account",)
+GST_PARTY_TYPES = VAT_PARTY_TYPES
+TAXABLE_GST_TREATMENTS = ("Taxable", "Zero-Rated")
+SALES_DOCTYPES = tuple(sales_doctypes)
+SUBCONTRACTING_DOCTYPES = ()
+GST_RCM_TAX_TYPES = ()
+GST_REFUND_TAX_TYPES = ()
+GST_TAX_TYPES = ("vat",)
+TAX_TYPES = ("vat",)
+STATE_NUMBERS = PROVINCES

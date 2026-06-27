@@ -1,43 +1,22 @@
 import click
 
 from vietnam_compliance.vat_vietnam.constants import BUG_REPORT_URL
-from vietnam_compliance.vat_vietnam.uninstall import before_uninstall as remove_gst
-from vietnam_compliance.vat_vietnam.uninstall import (
-    delete_education_custom_fields,
-    delete_healthcare_custom_fields,
-    delete_hrms_custom_fields,
-)
- (
-    before_uninstall as remove_income_tax,
-)
+from vietnam_compliance.vat_vietnam.uninstall import before_uninstall as remove_vat
 
 
 def before_uninstall():
     try:
-        print("Removing Income Tax customizations...")
-        remove_income_tax()
-
-        print("Removing GST customizations...")
-        remove_gst()
+        remove_vat()
 
     except Exception as e:
         click.secho(
-            (
-                "Removing customizations for India Compliance failed due to an error."
-                " Please try again or"
-                f" report the issue on {BUG_REPORT_URL} if not resolved."
-            ),
-            fg="bright_red",
+            f"Uninstall for Vietnam Compliance failed. Report at {BUG_REPORT_URL}",
+            fg="yellow",
         )
         raise e
 
+    click.secho("Vietnam Compliance uninstalled.", fg="green")
+
 
 def before_app_uninstall(app_name):
-    if app_name == "hrms":
-        delete_hrms_custom_fields()
-
-    if app_name == "education":
-        delete_education_custom_fields()
-
-    if app_name == "healthcare":
-        delete_healthcare_custom_fields()
+    pass
