@@ -1,5 +1,5 @@
 from setuptools import setup
 
-name = "india_compliance"
+name = "vietnam_compliance"
 
 setup()

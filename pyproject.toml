@@ -1,17 +1,16 @@
 [project]
-name = "india_compliance"
+name = "vietnam_compliance"
 authors = [
-    { name = "Resilient Tech", email = "hello@indiacompliance.app" }
+    { name = "ABN Platform", email = "hello@abnplatform.com" }
 ]
-description = "ERPNext app to simplify compliance with Indian Rules and Regulations"
+description = "Vietnam e-invoice compliance app for ERPNext — hóa đơn điện tử theo Nghị định 123/2020/NĐ-CP và Thông tư 78/2021/TT-BTC"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
-    "python-barcode~=0.15.1",
     "titlecase~=2.3",
     "pycryptodome~=3.19.0",
-
-    # Not used directly - required by PyQRCode for PNG generation
+    "lxml>=4.9.0",
+    "qrcode>=7.0",
     "pypng~=0.20220715.0",
 ]
 
@@ -66,6 +65,6 @@ docstring-code-format = true
 
 
 [project.urls]
-Homepage = "https://indiacompliance.app/"
-Repository = "https://github.com/resilient-tech/india-compliance"
-"Bug Reports" = "https://github.com/resilient-tech/india-compliance/issues/new?template=bug_report.yaml"
+Homepage = "https://github.com/stevennt/abn.platform.erp.base.vietnam-compliance"
+Repository = "https://github.com/stevennt/abn.platform.erp.base.vietnam-compliance"
+"Bug Reports" = "https://github.com/stevennt/abn.platform.erp.base.vietnam-compliance/issues"
