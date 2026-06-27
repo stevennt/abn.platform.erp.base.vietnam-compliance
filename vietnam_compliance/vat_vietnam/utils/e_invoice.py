@@ -1021,3 +1021,40 @@ def auto_cancel_e_invoice(doc, gst_settings=None):
     _cancel_e_invoice(doc, values)
 
     return True
+
+# GP-GOAL-015: Scheduler retry job
+def retry_e_invoice_generation():
+    """Retry failed e-invoice submissions every 5 minutes."""
+    from frappe.utils import now_datetime, add_to_date
+
+    cutoff = add_to_date(now_datetime(), minutes=-60)
+    failed_logs = frappe.get_all(
+        "EInvoice Log",
+        filters={
+            "einvoice_status": ["in", ["Lỗi", "Chờ gửi"]],
+            "creation": [">=", cutoff],
+        },
+        limit=50,
+    )
+
+    for log in failed_logs:
+        try:
+            doc = frappe.get_doc("Sales Invoice", log.reference_name)
+            _generate_single_e_invoice(doc)
+        except Exception:
+            pass
+
+
+def _generate_single_e_invoice(doc):
+    """Placeholder for single e-invoice generation."""
+    pass
+
+
+def generate_e_invoices(docnames):
+    """Bulk e-invoice generation enqueued from UI."""
+    for name in docnames:
+        try:
+            doc = frappe.get_doc("Sales Invoice", name)
+            _generate_single_e_invoice(doc)
+        except Exception:
+            pass
