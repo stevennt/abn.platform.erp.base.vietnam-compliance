@@ -1,0 +1,1344 @@
+# Vietnam Compliance - Goals File
+
+## Pack Metadata
+
+- PACK_ID: `vietnam-compliance`
+- PRODUCT / APP: Vietnam Compliance (Frappe app for Vietnam e-invoicing per Nghị định 123/2020/NĐ-CP)
+- TARGET_REPO: `/Users/thanhson/Workspace/abn.platform.erp.base.vietnam-compliance`
+- TARGET_MODULE: `vietnam_compliance/`
+- TARGET_SCOPE: Frappe app add-on to ERPNext v16; hooks into Sales Invoice lifecycle; integrates with Tổng cục Thuế (GDT) e-invoice portal
+- VERIFIED_ECOSYSTEM_OWNER_REPOS:
+  - `Axum API server: NOT applicable — Frappe provides its own API/auth layer`
+  - `PostgreSQL repo: NOT applicable — Frappe uses MariaDB internally`
+- PRIMARY_USERS: ERPNext operators doing e-invoice submission; accountants managing invoice workflow; platform admins configuring multi-tenant GDT credentials
+- GOAL_ORIENTATION_POLICY: `outcome-first; user-capability and technical-oriented goals are both allowed`
+- PLATFORMS: Frappe Desk (browser-based ERP UI); Python backend hooks; MariaDB
+- TECHNICAL_FOUNDATION_ASSESSMENT: existing India Compliance Frappe app present (372 .py files, ~70K Python LOC, ~16K JS LOC, 24 doctypes, ~30 ERPNext doctype overrides); must strip India-only code before adding Vietnam features
+- PMO_PLATFORM_SETUP_ASSESSMENT: `not applicable — repo is already a Frappe app, not a Flutter/Next.js/Godot project`
+- DEFAULT_STACK_PREFERENCES: `Python/Frappe app only; no web/mobile/client surface outside Frappe Desk`
+- PRODUCTION_SCOPE: `none`
+- ECOSYSTEM_CONTEXT_PROMPT: `/Users/thanhson/Workspace/abn.ai.swe/docs/META/PR-ECO-AbnEcosystem-ContextLookup/PR-ECO-AbnEcosystem-ContextLookup-prompt.md`
+- ECOSYSTEM_CONTEXT_USED: `yes; verified this Frappe app does NOT need Axum API, abn.postgresql, OneID, or OneWorkflow`
+- THEME_TEMPLATE_POLICY: `not applicable — Frappe Desk app uses ERPNext''s built-in UI framework (Bootstrap + Frappe Desk), not standalone web UI`
+- SELECTED_THEME_FOLDER: `/Users/thanhson/Workspace/abn.ai.swe/themes/default-theme — NOT applied; Frappe Desk owns the UI`
+- SELECTED_THEME_SOURCE: `N/A — Frappe Desk app`
+- UI_UX_QUALITY_BAR: `standard Frappe Desk conventions; print formats follow Circular 78 layout requirements`
+- EXISTING_ECOSYSTEM_REUSE_POLICY: `standalone-explicit; this app does not use ABN ecosystem services`
+- EXISTING_SYSTEMS_TO_PRIORITIZE:
+  - `N/A — standalone Frappe app`
+- AI_PROVIDER_DEFAULT: `OpenAI-compatible via OPENAI_COMPATIBLE_KEY and OPENAI_COMPATIBLE_URL; fallback DeepSeek https://api.deepseek.com model deepseek-v4-flash when unspecified`
+- DEFAULT_CONSTRAINTS:
+  - Must NOT delete ERPNext core files
+  - Must use Frappe hooks (doc_events, custom fields, overrides) — no monkey-patching outside hook system
+  - GDT API credentials stored encrypted (Frappe password fields)
+  - Digital signing uses mock initially; real signing service integrated later
+  - Multi-tenant uses Frappe multi-site or multi-company architecture
+- DEFAULT_VERIFICATION_STANDARD: code changes verified via `bench migrate`, `bench build`, manual UI inspection in ERPNext Desk; for Frappe-only changes, `frappe --site test_site execute` for Python verification
+- DEFAULT_FLASH_EXECUTION_KERNEL: `applies to required goals; each goal must include Slice Plan, Evidence Map, Verification Floor, Hard Stop Gates, and Anti-False-DONE Gate`
+- DEFAULT_DONE_BAR: stated outcome works end to end in ERPNext with Frappe Desk UI, required foundations are in place, required surfaces are proved, and residual risks are recorded
+- CREATED_AT: 2026-06-27T12:00:00Z
+- UPDATED_AT: 2026-06-27T12:00:00Z
+- WORK_THOUGHTS_ISSUE: https://github.com/stevennt/abn.platform.erp.base.vietnam-compliance/issues/2
+
+## Goals
+
+### GP-GOAL-001: Scaffold vietnam_compliance app — rename, strip India code, update metadata
+
+- STATUS: `TODO`
+- PRIORITY: `P0`
+- SOURCE: `user`
+- GOAL_TYPE: `platform/setup`
+- PRIMARY_OUTCOME: `vietnam_compliance` folder exists as a valid Frappe app with all India-only modules removed and metadata renamed.
+- USER_OUTCOME: `N/A - technical-oriented goal with no direct end-user action`
+- USER_STORY: `N/A - see TECHNICAL_OUTCOME and TECHNICAL_RATIONALE`
+- TECHNICAL_OUTCOME: The `vietnam_compliance/` package is a valid Frappe app with correct `hooks.py` metadata (app_name, app_title, required_apps), all India-only modules deleted, and `gst_india/` renamed to `vat_vietnam/`.
+- TECHNICAL_RATIONALE: The India Compliance codebase is the architectural foundation. Before any Vietnam features can be built, India-specific code must be removed and the app identity must be updated. This is the prerequisite for all other goals.
+- ENABLES_GOALS: `GP-GOAL-002 through GP-GOAL-018`
+- GOAL_FOR_GDA: Implement and verify that `vietnam_compliance/` is a clean Frappe app skeleton with India-only code removed and metadata updated, without rewriting it as a fake user action.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Update hooks.py metadata (app_name, app_title, app_publisher, app_description, app_icon, app_color, app_email, app_license, required_apps)`
+  - `slice 2: Update root files (setup.py, pyproject.toml, MANIFEST.in, README.md) with vietnam_compliance identity`
+  - `slice 3: Delete India-only modules (e_waybill, gstr_1, gstr_3b_report, purchase_reconciliation_tool, income_tax_india, pan, bill_of_entry, state_wise_e_waybill_threshold, gst_inward_supply, gst_return_log, gstr_action, gstr_import_log, GST India-specific reports, all e_waybill utils/client_scripts/print_formats/templates, gst_hsn_code, ineligible_itc overrides, reverse_charge overrides)`
+  - `slice 4: Rename india_compliance/ to vietnam_compliance/ and gst_india/ to vat_vietnam/ within the package`
+  - `slice 5: Update all internal imports from india_compliance to vietnam_compliance, from gst_india to vat_vietnam`
+  - `slice 6: Verify the app loads correctly with Frappe (check for import errors, missing references)`
+- PUBLIC_THOUGHT_PROCESS_SUMMARY:
+  - current understanding: The repo currently contains the full India Compliance source. We need to delete ~50% (India-only) and rename the remaining structure.
+  - assumptions: All India-only modules identified in PLAN.md are correct. No Frappe bench available locally for verification, so verification will be structural (grep for broken imports).
+  - options/tradeoffs: Could keep India code commented out for reference, but PLAN.md says DELETE. Deleting is cleaner and prevents accidental use.
+  - decision: Follow PLAN.md — delete India-only modules, rename structure, update imports.
+  - confidence/uncertainty: High confidence on what to delete (mapped extensively). Medium on import chain — some imports may be tangled across modules.
+  - next check: After deletion+rename, grep for `india_compliance`, `gst_india`, `GST`, `gst_`, `ewaybill`, `gstr`, `hsn` references and verify only intended references remain.
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `hooks.py metadata updated | grep app_name hooks.py | pending`
+  - `India-only modules deleted | find vietnam_compliance -name 'e_waybill*' -o -name 'gstr*' | pending`
+  - `Package renamed from india_compliance to vietnam_compliance | ls vietnam_compliance/ | pending`
+  - `Internal imports updated | grep -r 'india_compliance' vietnam_compliance/ | pending`
+  - `No dead references remain | grep -r 'gst_india' vietnam_compliance/ (should be zero) | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: `grep -r 'india_compliance' vietnam_compliance/` returns zero matches
+  - broader check: `find . -name '*.py' -path '*/vat_vietnam/*' | wc -l` shows files in renamed module
+  - exact blocker if verification cannot run: Cannot run `bench` locally; structural verification only
+- HARD_STOP_GATES:
+  - `breaking change approval required: NOT applicable — this is a new app, nothing depends on it yet`
+  - `destructive/prod/DB mutation requires explicit authorization: NOT applicable`
+  - `missing access/credentials: N/A`
+  - `materially different product choice: N/A`
+- ANTI_FALSE_DONE_GATE: `Do not mark DONE unless all delete/rename/import-update slices are verified structurally. Use DONE_WITH_EVIDENCE, PARTIAL_WITH_EVIDENCE, BLOCKED_ACCESS, BLOCKED_USER_DECISION, or NEEDS_STRONGER_REVIEW.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ECOSYSTEM_CONTEXT_USED: `N/A — standalone Frappe app`
+- EXISTING_ECOSYSTEM_REUSE: `N/A`
+- AXUM_API_REUSE: `N/A`
+- POSTGRESQL_REUSE: `N/A`
+- ONEID_AUTH_REUSE: `N/A`
+- ONEWORKFLOW_REUSE: `N/A`
+- AI_PROVIDER_CONTRACT: `N/A`
+- AI_PROVIDER_FALLBACK: `N/A`
+- SELECTED_THEME_FOLDER: `N/A`
+- SELECTED_THEME_SOURCE: `N/A`
+- UI_UX_QUALITY_BAR: `N/A`
+- UI_UX_COMPLETION_CHECKLIST:
+  - `workflow clarity: not-applicable-with-evidence (technical scaffold, no UI change)`
+  - `theme consistency: not-applicable-with-evidence`
+  - `visual hierarchy and spacing: not-applicable-with-evidence`
+  - `responsive layout: not-applicable-with-evidence`
+  - `empty/loading/error/success states: not-applicable-with-evidence`
+  - `accessibility basics: not-applicable-with-evidence`
+  - `copy and localization fit: not-applicable-with-evidence`
+  - `no overlap/overflow: not-applicable-with-evidence`
+  - `runtime/screenshot proof: not-applicable-with-evidence`
+- NEW_BUILD_JUSTIFICATION: `N/A`
+- TECHNICAL_FOUNDATION_ASSESSMENT: `existing India Compliance app code is the foundation; this goal strips it down to a clean VN skeleton`
+- PMO_PLATFORM_SETUP_ASSESSMENT: `not applicable`
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-001-AC-001: `hooks.py declares app_name = "vietnam_compliance" and app_title = "Vietnam Compliance"`
+  - GP-GOAL-001-AC-002: All India-only module directories deleted (see DELETE list in PLAN.md)
+  - GP-GOAL-001-AC-003: `vat_vietnam/` directory exists with remaining rewritten modules
+  - GP-GOAL-001-AC-004: Zero references to `india_compliance` or `gst_india` in import statements
+  - GP-GOAL-001-AC-005: `vietnam_compliance/__init__.py` exists with package identity
+- INPUT_MATERIALS:
+  - `PLAN.md` at repo root
+  - `https://github.com/stevennt/abn.platform.erp.base/issues/9`
+- TARGET_SCOPE: `vietnam_compliance/` package, hooks.py, setup.py, pyproject.toml, MANIFEST.in, README
+- REQUIRED_SURFACES: Python package structure
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Python package; owner: vietnam_compliance/; proof_needed: structural verification (grep, find); evidence: pending; status: missing`
+- CONSTRAINTS: No changes to .git/ or GitHub workflow files
+- DEPENDENCIES: `none`
+- VERIFICATION:
+  - command/check: `find . -name '*.py' | head -5 && grep 'app_name' vietnam_compliance/hooks.py && grep -r 'india_compliance' vietnam_compliance/`
+  - user-visible proof: N/A
+  - API/DB proof: N/A
+  - frontend/mobile/client proof: N/A
+  - UI/UX/theme proof: N/A
+  - worker/model/edge proof: N/A
+  - AI provider/config proof: N/A
+  - AC-to-evidence mapping: to be filled during execution
+  - foundation/completeness audit: to be filled during execution
+  - residual risks: to be filled during execution
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-scaffold`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-002: Vietnam constants — provinces, tax rates, invoice types, form templates
+
+- STATUS: `TODO`
+- PRIORITY: `P0`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: `vat_vietnam/constants/` contains Vietnam-specific data: 63 provinces, VAT rates (0%, 5%, 8%, 10%), invoice types, form templates, cancellation reason codes.
+- USER_OUTCOME: `N/A - technical-oriented goal with no direct end-user action`
+- USER_STORY: `N/A - see TECHNICAL_OUTCOME and TECHNICAL_RATIONALE`
+- TECHNICAL_OUTCOME: `vat_vietnam/constants/__init__.py` exports PROVINCES (63 provinces + GDT codes), VAT_RATES, INVOICE_TYPES, INVOICE_FORM_TEMPLATES, CANCEL_REASON_CODES, EINVOICE_STATUSES replacing India's STATE_NUMBERS, GST_CATEGORIES, HSN constants, etc.
+- TECHNICAL_RATIONALE: All business logic (e-invoice generation, validation, UI) depends on these constants. India's constants (36 states, GST categories, HSN) are irrelevant to Vietnam. Must be replaced before any Vietnam feature works.
+- ENABLES_GOALS: `GP-GOAL-003 through GP-GOAL-018`
+- GOAL_FOR_GDA: Implement and verify Vietnam-specific constants in `vat_vietnam/constants/` replacing India-specific constants.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Research and define PROVINCES dict (63 provinces + GDT tax authority codes)`
+  - `slice 2: Define VAT_RATES, INVOICE_TYPES, INVOICE_FORM_TEMPLATES (Mẫu số 01GTKT0/001...)`
+  - `slice 3: Define EINVOICE_STATUSES (Chờ gửi, Đã gửi, CQT cấp mã, Lỗi, Đã hủy...)`
+  - `slice 4: Define CANCEL_REASON_CODES and ADJUSTMENT_TYPES`
+  - `slice 5: Remove India-specific constants (STATE_NUMBERS, GST_CATEGORIES, HSN, EXPORT_TYPES, etc.)`
+  - `slice 6: Update all internal references from old constants to new`
+- PUBLIC_THOUGHT_PROCESS_SUMMARY:
+  - current understanding: India's constants/__init__.py is 1,490 lines of GST-specific data. VN needs different data entirely.
+  - assumptions: Province list per GDT official registry. Invoice form templates per Circular 78. VAT rates per current tax law.
+  - options/tradeoffs: Could hardcode or load from JSON. Hardcoding is simpler and matches India pattern.
+  - decision: Hardcode in Python dicts, matching India Compliance pattern.
+  - confidence/uncertainty: High confidence on province list and VAT rates. Medium on GDT tax authority codes (need official source).
+  - next check: Verify province code mapping against official GDT registry.
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `PROVINCES defined with 63 entries | wc -l check or len() check | pending`
+  - `VAT_RATES defined (0%, 5%, 8%, 10%) | grep VAT_RATES constants/__init__.py | pending`
+  - `INVOICE_FORM_TEMPLATES defined | grep INVOICE_FORM_TEMPLATES | pending`
+  - `Old India constants removed | grep STATE_NUMBERS constants/__init__.py (should be zero) | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: `python3 -c "from vietnam_compliance.vat_vietnam.constants import PROVINCES; assert len(PROVINCES) >= 63"`
+  - broader check: All existing .py files importing from constants still work
+  - exact blocker if verification cannot run: Cannot run Python imports in this environment
+- HARD_STOP_GATES:
+  - `materially different product choice: N/A for constants`
+- ANTI_FALSE_DONE_GATE: `Do not mark DONE unless all 6 slices are completed and all old India constant references are purged.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ECOSYSTEM_CONTEXT_USED: `N/A`
+- EXISTING_ECOSYSTEM_REUSE: `N/A`
+- AXUM_API_REUSE: `N/A`
+- POSTGRESQL_REUSE: `N/A`
+- ONEID_AUTH_REUSE: `N/A`
+- ONEWORKFLOW_REUSE: `N/A`
+- AI_PROVIDER_CONTRACT: `N/A`
+- AI_PROVIDER_FALLBACK: `N/A`
+- SELECTED_THEME_FOLDER: `N/A`
+- SELECTED_THEME_SOURCE: `N/A`
+- UI_UX_QUALITY_BAR: `N/A`
+- UI_UX_COMPLETION_CHECKLIST: `not-applicable-with-evidence (backend constants, no UI)`
+- NEW_BUILD_JUSTIFICATION: `N/A`
+- TECHNICAL_FOUNDATION_ASSESSMENT: `India constants file exists as template; this goal rewrites it for VN`
+- PMO_PLATFORM_SETUP_ASSESSMENT: `not applicable`
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-002-AC-001: `vat_vietnam/constants/__init__.py` contains PROVINCES with 63 entries
+  - GP-GOAL-002-AC-002: VAT_RATES constant with 0%, 5%, 8%, 10%
+  - GP-GOAL-002-AC-003: INVOICE_TYPES (Có mã / Không mã CQT)
+  - GP-GOAL-002-AC-004: INVOICE_FORM_TEMPLATES (Mẫu số 01GTKT0/001...)
+  - GP-GOAL-002-AC-005: EINVOICE_STATUSES defined
+  - GP-GOAL-002-AC-006: Zero references to India-specific constants (STATE_NUMBERS, GST_CATEGORIES, HSN, etc.)
+- INPUT_MATERIALS:
+  - `PLAN.md`
+  - `https://github.com/stevennt/abn.platform.erp.base/issues/9`
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/constants/`
+- REQUIRED_SURFACES: Python module
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Python module; owner: vat_vietnam/constants/; proof_needed: import check + len() assertions; evidence: pending; status: missing`
+- CONSTRAINTS: Match India Compliance pattern (Python dicts, same file structure)
+- DEPENDENCIES: `GP-GOAL-001`
+- VERIFICATION:
+  - command/check: grep-based structural verification
+  - user-visible proof: N/A
+  - API/DB proof: N/A
+  - frontend/mobile/client proof: N/A
+  - UI/UX/theme proof: N/A
+  - worker/model/edge proof: N/A
+  - AI provider/config proof: N/A
+  - AC-to-evidence mapping: to be filled during execution
+  - foundation/completeness audit: to be filled during execution
+  - residual risks: to be filled during execution
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-constants`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-003: TaxDepartmentConfig doctype — replaces GST Settings
+
+- STATUS: `TODO`
+- PRIORITY: `P0`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: `TaxDepartmentConfig` doctype exists with GDT API endpoint, authentication, enable/disable e-invoice, auto-generate, retry config — replacing India's `GSTSettings`.
+- USER_OUTCOME: ERPNext admin can configure GDT portal connection, enable e-invoicing, and set auto-generation policies per company.
+- USER_STORY: As an ERPNext admin, I want to configure the Tax Department (GDT) settings so that e-invoices can be submitted to the Vietnamese tax authority.
+- TECHNICAL_OUTCOME: `vat_vietnam/doctype/tax_department_config/` contains the Frappe DocType JSON, Python model, and JS client script, with fields for GDT API URL, sandbox mode, enable/disable e-invoice, auto-generate on submit, auto-cancel, retry config, invoice form number list, and per-company credentials.
+- TECHNICAL_RATIONALE: India's GSTSettings is the central configuration hub. Vietnam needs its own equivalent with GDT-specific fields.
+- ENABLES_GOALS: `GP-GOAL-006 through GP-GOAL-018`
+- GOAL_FOR_GDA: Implement and verify `TaxDepartmentConfig` doctype as the central configuration for Vietnam e-invoicing.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Copy GSTSettings doctype as base, rename to TaxDepartmentConfig`
+  - `slice 2: Remove India-specific fields (GSTIN, HSN, e-Waybill, GST Returns, Purchase Reconciliation tabs)`
+  - `slice 3: Add Vietnam-specific fields (GDT API URL, sandbox mode, enable_e_invoice, auto_generate_e_invoice, auto_cancel_e_invoice, retry config, invoice form numbers per company)`
+  - `slice 4: Update Python model (tax_department_config.py) with VN-specific validation logic`
+  - `slice 5: Add JS client script for Desk UI configuration form`
+  - `slice 6: Register in hooks.py doctype_js and doc_events`
+- PUBLIC_THOUGHT_PROCESS_SUMMARY:
+  - current understanding: GSTSettings has ~30+ fields across multiple tabs (General, API, e-Waybill, e-Invoice, GSTR-1, Accounts, Purchase Reconciliation, Credentials). VN needs only e-Invoice config + API settings.
+  - assumptions: GDT API uses username/password auth (not GSTIN-based token auth). Sandbox mode is available for testing.
+  - options/tradeoffs: Could add to existing Company doctype instead. But separate settings doctype is cleaner and matches India pattern.
+  - decision: Separate TaxDepartmentConfig doctype, linked to Company.
+  - confidence/uncertainty: Medium — GDT API auth mechanism unknown; may need adjustment once real API integration starts.
+  - next check: Confirm GDT API auth mechanism from official docs or community sources.
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `TaxDepartmentConfig doctype JSON exists | ls doctype/tax_department_config/ | pending`
+  - `India-specific fields removed | grep -c 'ewaybill\|gstr\|hsn\|reconciliation' doctype JSON | pending`
+  - `VN-specific fields present | grep -c 'gdt_api\|sandbox\|enable_e_invoice' doctype JSON | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Frappe DocType JSON valid and contains required fields
+  - broader check: Would need `bench migrate` to install — cannot run locally
+  - exact blocker: Cannot verify doctype installation without Frappe bench
+- HARD_STOP_GATES:
+  - `N/A`
+- ANTI_FALSE_DONE_GATE: `Do not mark DONE unless doctype JSON, Python model, and JS client script exist and structural verification passes.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-003-AC-001: TaxDepartmentConfig doctype JSON exists with GDT API fields
+  - GP-GOAL-003-AC-002: Python model handles validation (required fields, URL format)
+  - GP-GOAL-003-AC-003: JS client script renders configuration form in Desk
+  - GP-GOAL-003-AC-004: All India-specific tabs/fields removed
+- INPUT_MATERIALS:
+  - `vat_vietnam/doctype/gst_settings/` (reference for deletion, kept as structure template)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/doctype/tax_department_config/`
+- REQUIRED_SURFACES: Frappe DocType (JSON + Python + JS)
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Frappe DocType; owner: vat_vietnam/doctype/tax_department_config/; proof_needed: valid JSON, Python model imports, JS client registered in hooks; evidence: pending; status: missing`
+- CONSTRAINTS: Match Frappe DocType conventions (naming, field types, permissions)
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-002`
+- VERIFICATION:
+  - command/check: `python3 -c "import json; json.load(open('...tax_department_config.json'))"` + grep for fieldnames
+  - user-visible proof: N/A (would need running ERPNext)
+  - API/DB proof: N/A
+  - frontend/mobile/client proof: N/A
+  - UI/UX/theme proof: N/A
+  - worker/model/edge proof: N/A
+  - AI provider/config proof: N/A
+  - AC-to-evidence mapping: to be filled during execution
+  - foundation/completeness audit: to be filled during execution
+  - residual risks: GDT API auth mechanism may differ from assumptions
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-tax-dept-config`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-004: MST doctype — replaces GSTIN, manages tax codes per company
+
+- STATUS: `TODO`
+- PRIORITY: `P0`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: `MST` doctype manages Mã số thuế (10-13 digit tax codes) per company, linked to GDT credentials and digital certificate reference.
+- USER_OUTCOME: ERPNext admin can register a company''s MST and link it to GDT authentication credentials for e-invoice submission.
+- USER_STORY: As an ERPNext admin, I want to register my company''s Mã số thuế (MST) with the GDT portal credentials so that e-invoices can be submitted under the correct tax identity.
+- TECHNICAL_OUTCOME: `vat_vietnam/doctype/mst/` replaces `gstin/` with simpler validation (10 or 13 digits), company link, GDT username/password (encrypted), and digital certificate reference field.
+- TECHNICAL_RATIONALE: India's GSTIN is 15 characters with state code + PAN + checksum. Vietnam's MST is 10 or 13 digits with different validation. The credential model is also different (username/password vs GSTN portal token).
+- ENABLES_GOALS: `GP-GOAL-008, GP-GOAL-009`
+- GOAL_FOR_GDA: Implement and verify `MST` doctype for managing company tax identities and GDT credentials.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Copy GSTIN doctype structure, rename to MST`
+  - `slice 2: Simplify validation — MST is 10 or 13 numeric digits (remove India state-code logic)`
+  - `slice 3: Add GDT credential fields (gdt_username, gdt_password as Password field)`
+  - `slice 4: Add digital_certificate_reference field (string, references USB Token ID or HSM key ID)`
+  - `slice 5: Add company link field`
+  - `slice 6: Register in hooks.py and update install.py`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `MST doctype JSON exists | ls doctype/mst/ | pending`
+  - `10-digit MST validation | grep 'validate.*mst' mst.py | pending`
+  - `13-digit MST validation | grep 'validate.*mst' mst.py | pending`
+  - `GDT credentials as Password type | grep 'Password' mst.json | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Doctype JSON is valid, Python model has validation
+  - broader check: Would need bench migrate — cannot run locally
+  - exact blocker: Cannot verify in Frappe without bench
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-004-AC-001: MST doctype validates 10-digit and 13-digit numeric MST codes
+  - GP-GOAL-004-AC-002: GDT username/password stored with Frappe Password field type (encrypted)
+  - GP-GOAL-004-AC-003: Company link enables per-company MST registration
+  - GP-GOAL-004-AC-004: India GSTIN-specific validation logic removed
+- INPUT_MATERIALS:
+  - `vat_vietnam/doctype/gstin/` (reference, to be deleted)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/doctype/mst/`
+- REQUIRED_SURFACES: Frappe DocType
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Frappe DocType; owner: vat_vietnam/doctype/mst/; proof_needed: valid JSON, Python model, JS client; evidence: pending; status: missing`
+- CONSTRAINTS: Follow Frappe DocType conventions; password field must use Frappe Password type
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-002`
+- VERIFICATION:
+  - command/check: Structural checks (JSON validity, import paths)
+  - user-visible proof: N/A
+  - API/DB proof: N/A
+  - frontend/mobile/client proof: N/A
+  - UI/UX/theme proof: N/A
+  - worker/model/edge proof: N/A
+  - AI provider/config proof: N/A
+  - AC-to-evidence mapping: to be filled during execution
+  - foundation/completeness audit: to be filled during execution
+  - residual risks: Actual GDT auth mechanism may require OAuth or certificate-based auth
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-mst`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-005: EInvoiceLog doctype — rewrite for Vietnam statuses, track GDT submissions
+
+- STATUS: `TODO`
+- PRIORITY: `P0`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: `EInvoiceLog` doctype tracks each e-invoice submission to GDT with Vietnam-specific statuses, transaction IDs, and request/response JSON.
+- USER_OUTCOME: ERPNext operator can view the submission history and status of each e-invoice sent to the tax authority.
+- USER_STORY: As an ERPNext operator, I want to track the submission status of each e-invoice sent to Tổng cục Thuế so that I can monitor which invoices were accepted, which need retry, and which were rejected.
+- TECHNICAL_OUTCOME: `vat_vietnam/doctype/e_invoice_log/` replaces India's e_invoice_log with VN-specific statuses (Chờ gửi, Đã gửi, CQT cấp mã, Đã có mã, Lỗi, Đã hủy...), transaction_id (mã tra cứu from GDT), form_number, series, and request/response JSON fields.
+- TECHNICAL_RATIONALE: India's e-Invoice Log tracks IRN from NIC portal. Vietnam's GDT returns different identifiers and statuses.
+- ENABLES_GOALS: `GP-GOAL-008, GP-GOAL-009, GP-GOAL-015`
+- GOAL_FOR_GDA: Implement and verify `EInvoiceLog` doctype with Vietnam-specific submission tracking.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Copy India e_invoice_log doctype as base`
+  - `slice 2: Replace India statuses (Pending, Generated, Cancelled...) with Vietnam statuses`
+  - `slice 3: Replace irn field with transaction_id (mã tra cứu)`
+  - `slice 4: Add form_number, series fields`
+  - `slice 5: Add gdt_response JSON field for full API response storage`
+  - `slice 6: Register in hooks.py dashboard overrides`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `EInvoiceLog doctype JSON exists | ls doctrine/e_invoice_log/ | pending`
+  - `VN statuses defined | grep 'Chờ gửi\|CQT cấp mã\|Đã hủy' e_invoice_log.json | pending`
+  - `transaction_id field present | grep transaction_id e_invoice_log.json | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Doctype JSON valid
+  - broader check: N/A without bench
+  - exact blocker: Cannot install doctype without Frappe bench
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-005-AC-001: EInvoiceLog has VN-specific status options (not India''s IRN statuses)
+  - GP-GOAL-005-AC-002: transaction_id field replaces irn
+  - GP-GOAL-005-AC-003: form_number and series fields present
+  - GP-GOAL-005-AC-004: gdt_response JSON field for full API response
+- INPUT_MATERIALS:
+  - `vat_vietnam/doctype/e_invoice_log/` (India reference, to be rewritten)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/doctype/e_invoice_log/`
+- REQUIRED_SURFACES: Frappe DocType
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Frappe DocType; owner: vat_vietnam/doctype/e_invoice_log/; proof_needed: valid JSON, VN-specific fields; evidence: pending; status: missing`
+- CONSTRAINTS: Match Frappe DocType conventions
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-002`
+- VERIFICATION:
+  - command/check: Structural verification
+  - AC-to-evidence mapping: to be filled during execution
+  - foundation/completeness audit: to be filled during execution
+  - residual risks: Actual GDT response format unknown; JSON field is flexible
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-einvoice-log`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-006: Custom fields on Sales Invoice — e-invoice metadata
+
+- STATUS: `TODO`
+- PRIORITY: `P0`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: Sales Invoice doctype has Vietnam e-invoice custom fields (einvoice_status, transaction_id, form_number, series, adjustment_type, adjusted_invoice, gdt_submitted_on, gdt_response) injected via Frappe custom fields system.
+- USER_OUTCOME: ERPNext operator sees e-invoice status, transaction ID, and form/series numbers directly on the Sales Invoice form.
+- USER_STORY: As an ERPNext operator, I want to see the e-invoice status and GDT transaction ID directly on the Sales Invoice so that I know whether the invoice was successfully submitted to the tax authority.
+- TECHNICAL_OUTCOME: `vat_vietnam/constants/custom_fields.py` defines the custom fields for Sales Invoice with fieldnames (einvoice_status, transaction_id, form_number, series, adjustment_type, adjusted_invoice, gdt_submitted_on, gdt_response) and they are created during `bench migrate` via the setup flow.
+- TECHNICAL_RATIONALE: India Compliance patches `irn` and `einvoice_status` onto Sales Invoice. Vietnam needs additional fields (form_number, series, adjustment workflow). Must remove India-only fields (irn, ewaybill fields, transporter info, GST-specific address fields).
+- ENABLES_GOALS: `GP-GOAL-010, GP-GOAL-011, GP-GOAL-012`
+- GOAL_FOR_GDA: Implement and verify Vietnam e-invoice custom fields on Sales Invoice, removing India-specific fields.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Audit existing India custom fields on Sales Invoice (from custom_fields.py ~line 951, 1430, 1796)`
+  - `slice 2: Remove India-only fields from Sales Invoice custom field definitions (irn, ewaybill_no, ewaybill_status, transporter_info, mode_of_transport, gst_vehicle_type, distance, invoice_copy, GST address fields)`
+  - `slice 3: Define Vietnam custom fields: einvoice_status (VN statuses), transaction_id, form_number, series, adjustment_type, adjusted_invoice, gdt_submitted_on, gdt_response`
+  - `slice 4: Define field placement (insert_after references matching ERPNext v16 Sales Invoice layout)`
+  - `slice 5: Update custom_fields.py constants and setup/__init__.py to create these fields`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `India fields removed from Sales Invoice | grep 'irn\|ewaybill' custom_fields.py (should be zero for VN) | pending`
+  - `Vietnam fields defined | grep 'einvoice_status\|transaction_id\|form_number\|series' custom_fields.py | pending`
+  - `Custom fields registered in setup | grep 'Sales Invoice' setup/__init__.py | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: `grep` for field definitions in custom_fields.py
+  - broader check: Cross-reference with PLAN.md — verify no India-only fields remain on Sales Invoice
+  - exact blocker: Cannot verify field creation in live ERPNext without bench
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies. Custom field definitions must exist in the correct file and be registered in setup flow.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-006-AC-001: All India-only fields removed from Sales Invoice custom field definitions
+  - GP-GOAL-006-AC-002: Vietnam einvoice_status field with VN-specific status options defined
+  - GP-GOAL-006-AC-003: transaction_id field (mã tra cứu) defined
+  - GP-GOAL-006-AC-004: form_number and series fields defined
+  - GP-GOAL-006-AC-005: adjustment_type and adjusted_invoice fields for correction workflow
+  - GP-GOAL-006-AC-006: Fields registered in setup/__init__.py create_custom_fields()
+- INPUT_MATERIALS:
+  - `vat_vietnam/constants/custom_fields.py` (India reference)
+  - `PLAN.md` Section 2 — fields needed
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/constants/custom_fields.py`, `vat_vietnam/setup/__init__.py`
+- REQUIRED_SURFACES: Frappe custom fields (Python definitions)
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Custom fields definitions; owner: vat_vietnam/constants/custom_fields.py; proof_needed: field definitions grep; evidence: pending; status: missing`
+- CONSTRAINTS: Must use Frappe custom fields API (not direct database ALTER)
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-002`
+- VERIFICATION:
+  - command/check: grep-based structural check
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Field placement (insert_after) may shift in ERPNext v16 vs v15
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-custom-fields-si`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-007: Custom fields on Company and Customer — MST and GDT fields
+
+- STATUS: `TODO`
+- PRIORITY: `P0`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: Company and Customer doctypes have Vietnam-specific fields (mst, digital_certificate, gdt_credentials, invoice_form_numbers for Company; mst, identification_type for Customer) injected via Frappe custom fields.
+- USER_OUTCOME: ERPNext admin can configure company MST and GDT credentials; operators can enter buyer MST on customer records.
+- USER_STORY: As an ERPNext admin, I want to register my company''s MST and digital certificate on the Company record so that e-invoices are generated with the correct seller identity.
+- TECHNICAL_OUTCOME: Custom fields on Company (mst, digital_certificate_ref, gdt_username, gdt_password, invoice_form_numbers table, invoice_series table) and Customer (mst, identification_type, identification_number) are defined in custom_fields.py. India-specific fields (gstin, gst_category, pan) are removed from Party definitions.
+- TECHNICAL_RATIONALE: India patches gstin and gst_category on Customer/Supplier/Company. Vietnam needs MST instead. The digital certificate reference is new (no India equivalent).
+- ENABLES_GOALS: `GP-GOAL-008, GP-GOAL-009`
+- GOAL_FOR_GDA: Implement and verify Company and Customer custom fields for Vietnam e-invoicing.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Remove India gstin/gst_category/pan from party_fields and Company/Customer custom field definitions`
+  - `slice 2: Add mst field to Company (10-13 digit, validated)`
+  - `slice 3: Add digital_certificate_ref, gdt_username, gdt_password to Company`
+  - `slice 4: Add invoice_form_numbers child table to Company (allowed form numbers)`
+  - `slice 5: Add mst, identification_type, identification_number to Customer`
+  - `slice 6: Register all in custom_fields.py and setup flow`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `India fields removed from party | grep 'gstin' custom_fields.py (should not appear in Company/Customer sections) | pending`
+  - `Company.mst field defined | grep 'Company.*mst' custom_fields.py | pending`
+  - `Customer.mst field defined | grep 'Customer.*mst' custom_fields.py | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: grep for VN custom field definitions in custom_fields.py
+  - broader check: Cross-reference with PLAN.md party fields
+  - exact blocker: Cannot verify in live ERPNext without bench
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-007-AC-001: India party fields (gstin, gst_category) removed from Company/Customer/Supplier definitions
+  - GP-GOAL-007-AC-002: Company has mst, digital_certificate_ref, gdt_username, gdt_password fields
+  - GP-GOAL-007-AC-003: Customer has mst field and optional identification fields
+  - GP-GOAL-007-AC-004: Fields registered in setup flow
+- INPUT_MATERIALS:
+  - `vat_vietnam/constants/custom_fields.py` (India party_fields reference)
+  - `PLAN.md` Section 2 — Company/Customer fields needed
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/constants/custom_fields.py`
+- REQUIRED_SURFACES: Frappe custom fields
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Custom fields; owner: vat_vietnam/constants/custom_fields.py; proof_needed: grep for field definitions; evidence: pending; status: missing`
+- CONSTRAINTS: Frappe custom fields conventions
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-002, GP-GOAL-004`
+- VERIFICATION:
+  - command/check: grep-based
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Customer identification types per VN regulation (CMND/CCCD/Hộ chiếu/Giấy phép ĐKKD)
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-custom-fields-party`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-008: GDT e-Invoice API client — authentication, submit, status, cancel
+
+- STATUS: `TODO`
+- PRIORITY: `P1`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: `vat_vietnam/api_classes/gdt/` contains a GDT E-Invoice API client implementing authentication, invoice submission, status check, and cancellation — replacing India's NIC portal client.
+- USER_OUTCOME: N/A (backend integration — user outcome visible via Sales Invoice submit/cancel actions in GP-GOAL-010)
+- USER_STORY: N/A - technical-oriented goal enabling user-facing e-invoice actions
+- TECHNICAL_OUTCOME: `vat_vietnam/api_classes/gdt/e_invoice.py` implements `GDTEInvoiceAPI` class extending `BaseAPI` with methods: `setup()`, `authenticate()`, `submit_invoice(signed_xml)`, `get_invoice_status(transaction_id)`, `cancel_invoice(transaction_id, reason)`, `adjust_invoice(...)`, `replace_invoice(...)`, sandbox mode support via TaxDepartmentConfig.
+- TECHNICAL_RATIONALE: India's NIC portal API client (1,023 lines in e_invoice.py) implements JWT token auth + JSON payloads. Vietnam's GDT uses different auth + XML payloads. Must maintain the same architectural pattern but with entirely different implementation.
+- ENABLES_GOALS: `GP-GOAL-010, GP-GOAL-015`
+- GOAL_FOR_GDA: Build GDT API client class following BaseAPI pattern, with mock/sandbox mode for initial implementation.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Create GDTEInvoiceAPI class extending BaseAPI with required method stubs`
+  - `slice 2: Implement sandbox/mock mode (returns fake success responses for testing)`
+  - `slice 3: Implement authentication method (store token/session)`
+  - `slice 4: Implement submit_invoice (POST signed XML to GDT endpoint)`
+  - `slice 5: Implement get_invoice_status (GET/POST by transaction_id)`
+  - `slice 6: Implement cancel_invoice with reason code`
+  - `slice 7: Implement adjust_invoice and replace_invoice`
+  - `slice 8: Add error handling and retry logic`
+- PUBLIC_THOUGHT_PROCESS_SUMMARY:
+  - current understanding: India's EInvoiceAPI extends BaseAPI with JWT + GSTN portal auth. VN likely uses username/password + digital certificate auth with XML payloads.
+  - assumptions: GDT API uses REST/HTTPS. Auth is username/password + digital certificate. Response is XML or JSON containing transaction_id and status.
+  - options/tradeoffs: Start with mock/sandbox that returns hardcoded success responses. Replace with real API calls once GDT API docs available.
+  - decision: Mock-first approach. Real API integration blocked on GDT documentation.
+  - confidence/uncertainty: High on architecture pattern. Low on exact GDT API contract (endpoints, auth, payload format).
+  - next check: Research GDT API documentation or community reverse-engineered specs.
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `GDTEInvoiceAPI class exists in api_classes/gdt/ | ls api_classes/gdt/e_invoice.py | pending`
+  - `Sandbox mode implemented | grep 'sandbox_mode' api_classes/gdt/e_invoice.py | pending`
+  - `submit_invoice method defined | grep 'def submit_invoice' e_invoice.py | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Python file exists with class definition and method stubs
+  - broader check: Import test — `from vietnam_compliance.vat_vietnam.api_classes.gdt.e_invoice import GDTEInvoiceAPI`
+  - exact blocker: Cannot test real GDT API calls without credentials + documentation
+- HARD_STOP_GATES:
+  - `missing access/credentials: GDT sandbox credentials needed for real API testing`
+  - `materially different product choice: Mock vs real API implementation order`
+- ANTI_FALSE_DONE_GATE: `Do not mark DONE unless class exists with all method stubs, sandbox mode returns valid responses, and the module follows BaseAPI pattern. Real API integration blocked on GDT docs — mark PARTIAL when sandbox is done.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-008-AC-001: GDTEInvoiceAPI class extends BaseAPI
+  - GP-GOAL-008-AC-002: Sandbox mode returns valid mock responses for submit, status, cancel
+  - GP-GOAL-008-AC-003: Authentication method exists (even if mock)
+  - GP-GOAL-008-AC-004: Error handling distinguishes network errors, auth failures, GDT rejection
+  - GP-GOAL-008-AC-005: Config reads TaxDepartmentConfig for API URL and sandbox mode
+- INPUT_MATERIALS:
+  - `vat_vietnam/api_classes/nic/e_invoice.py` (India reference pattern)
+  - `vat_vietnam/api_classes/base.py` (BaseAPI class)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/api_classes/gdt/`
+- REQUIRED_SURFACES: Python API client module
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Python module; owner: vat_vietnam/api_classes/gdt/; proof_needed: class method stubs, sandbox returns, import test; evidence: pending; status: missing`
+- CONSTRAINTS: Follow BaseAPI pattern from India Compliance; sandbox must not make real network calls
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-003`
+- VERIFICATION:
+  - command/check: `python3 -c "from vietnam_compliance.vat_vietnam.api_classes.gdt.e_invoice import GDTEInvoiceAPI; print('OK')" -- mock import test`
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Real GDT API contract unknown; sandbox responses are best-effort guesses
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-gdt-api-client`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-009: Vietnam XML e-invoice schema generator
+
+- STATUS: `TODO`
+- PRIORITY: `P1`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: `vat_vietnam/utils/xml_generator.py` maps Sales Invoice data to Vietnam e-invoice XML schema per Circular 78/2021/TT-BTC.
+- USER_OUTCOME: N/A (backend utility — XML is submitted to GDT, not viewed by user)
+- USER_STORY: N/A - technical-oriented goal
+- TECHNICAL_OUTCOME: XML generator takes a Sales Invoice doc and produces valid Vietnam e-invoice XML including: invoice metadata (form_number, series, number, date), seller info (company name, MST, address, phone, bank), buyer info (name, MST/ID, address), items (name, unit, qty, price, amount, tax rate, tax amount), totals, digital signature placeholder, and QR code data.
+- TECHNICAL_RATIONALE: India uses JSON payload to NIC portal. Vietnam requires XML submission per Circular 78 schema. This is entirely different format and logic.
+- ENABLES_GOALS: `GP-GOAL-008, GP-GOAL-010`
+- GOAL_FOR_GDA: Build Vietnam e-invoice XML generator mapping Sales Invoice data to Circular 78 XML schema.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Define Circular 78 XML schema structure as Python dataclasses or dict template`
+  - `slice 2: Implement seller info mapping (from Company doctype + MST)`
+  - `slice 3: Implement buyer info mapping (from Customer doctype)`
+  - `slice 4: Implement items mapping (from Sales Invoice Item table)`
+  - `slice 5: Implement tax and totals mapping`
+  - `slice 6: Add digital signature placeholder element`
+  - `slice 7: Generate sample XML and validate against known Circular 78 examples`
+- PUBLIC_THOUGHT_PROCESS_SUMMARY:
+  - current understanding: VN e-invoice XML schema is defined in Circular 78/2021/TT-BTC. It specifies XML elements for invoice header, seller, buyer, items, tax breakdown, totals, and digital signature.
+  - assumptions: XML schema structure based on publicly available Circular 78 examples. Must support both có mã and không mã invoice types.
+  - options/tradeoffs: Use lxml.etree for XML generation (matches India's approach with dict/json). Could use Jinja XML template — simpler but less type-safe.
+  - decision: Use Python dict → XML mapping with lxml, following India''s TransactionData pattern.
+  - confidence/uncertainty: Medium — exact XML namespace and element names need verification against official GDT schema docs.
+  - next check: Obtain Circular 78 XML schema XSD or example XML files.
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `XML generator module exists | ls utils/xml_generator.py | pending`
+  - `Seller info mapping | grep 'seller\|company_name\|mst' xml_generator.py | pending`
+  - `Buyer info mapping | grep 'buyer\|customer_name' xml_generator.py | pending`
+  - `Items mapping | grep 'item\|quantity\|price' xml_generator.py | pending`
+  - `Valid XML output | python3 xml_generator.py --test | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Module generates valid XML string from mock Sales Invoice data
+  - broader check: XML validates against Circular 78 schema when XSD is available
+  - exact blocker: GDT XML schema XSD not available; verifying against example XMLs only
+- HARD_STOP_GATES:
+  - `materially different product choice: XML schema version (Circular 78 vs potential updates)`
+- ANTI_FALSE_DONE_GATE: `Do not mark DONE unless XML generator produces well-formed XML containing all required elements.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-009-AC-001: XML generator maps Sales Invoice to well-formed XML
+  - GP-GOAL-009-AC-002: XML includes all required Circular 78 elements (invoice header, seller, buyer, items, tax, totals)
+  - GP-GOAL-009-AC-003: XML has digital signature placeholder
+  - GP-GOAL-009-AC-004: QR code data element included
+  - GP-GOAL-009-AC-005: Handles both có mã and không mã invoice types
+- INPUT_MATERIALS:
+  - Circular 78/2021/TT-BTC e-invoice XML schema specification
+  - `vat_vietnam/utils/transaction_data.py` (India's data mapping reference)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/utils/xml_generator.py`
+- REQUIRED_SURFACES: Python utility module
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Python module; owner: vat_vietnam/utils/xml_generator.py; proof_needed: generates valid XML from mock data; evidence: pending; status: missing`
+- CONSTRAINTS: Use lxml for XML generation; follow TransactionData pattern for data mapping
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-002, GP-GOAL-006`
+- VERIFICATION:
+  - command/check: `python3 -c "from xml_generator import generate; xml = generate(mock_si); assert '<Invoice>' in xml" -- mock test`
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: XML schema may have changed since Circular 78; need official GDT XSD
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-xml-generator`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-010: Sales Invoice e-invoice overrides — submit, cancel, retry hooks
+
+- STATUS: `TODO`
+- PRIORITY: `P1`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: Sales Invoice `on_submit`, `before_cancel`, and related hooks trigger GDT e-invoice generation, cancellation, and retry — replacing India's IRN generation flow.
+- USER_OUTCOME: ERPNext operator submitting a Sales Invoice automatically triggers e-invoice generation to GDT. Cancelling a Sales Invoice triggers e-invoice cancellation.
+- USER_STORY: As an ERPNext operator, when I submit a Sales Invoice, I want the system to automatically generate and submit an e-invoice to Tổng cục Thuế so that the invoice is legally registered.
+- TECHNICAL_OUTCOME: `vat_vietnam/overrides/sales_invoice.py` overrides `on_submit` (auto-generate e-invoice if enabled), `before_cancel` (cancel e-invoice if submitted), `validate` (validate MST, form_number, series availability), and integrates with TaxDepartmentConfig, xml_generator, EInvoiceLog, and GDT API client.
+- TECHNICAL_RATIONALE: India's sales_invoice.py override (373 lines) implements IRN generation via NIC portal. Vietnam needs the same hook pattern but with GDT portal, XML format, and different business rules.
+- ENABLES_GOALS: `GP-GOAL-015`
+- GOAL_FOR_GDA: Implement Sales Invoice doc_event overrides for Vietnam e-invoice lifecycle.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Rewrite validate() to check VN-specific fields (MST, form_number, series)`
+  - `slice 2: Rewrite on_submit() to enqueue e-invoice generation via GDT API`
+  - `slice 3: Rewrite before_cancel() to trigger e-invoice cancellation`
+  - `slice 4: Implement auto-cancel and auto-retry logic`
+  - `slice 5: Add EInvoiceLog creation and status tracking`
+  - `slice 6: Update hooks.py doc_events for Sales Invoice`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `override/sales_invoice.py exists | ls overrides/sales_invoice.py | pending`
+  - `on_submit triggers e-invoice | grep 'def on_submit' overrides/sales_invoice.py | pending`
+  - `before_cancel triggers cancellation | grep 'def before_cancel' overrides/sales_invoice.py | pending`
+  - `hooks.py updated | grep 'Sales Invoice' hooks.py | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Override file exists with correct method signatures
+  - broader check: Would need running ERPNext with bench to verify hook execution
+  - exact blocker: Cannot verify runtime hook behavior without Frappe bench
+- HARD_STOP_GATES:
+  - `breaking change: Hook signatures must match Frappe doc_event contract`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies. Override methods must be registered in hooks.py.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-010-AC-001: on_submit enqueues e-invoice generation when TaxDepartmentConfig.enable_e_invoice is true
+  - GP-GOAL-010-AC-002: before_cancel triggers e-invoice cancellation when einvoice_status is submitted
+  - GP-GOAL-010-AC-003: validate checks required fields (MST, form_number, series)
+  - GP-GOAL-010-AC-004: EInvoiceLog record created/updated on each state change
+  - GP-GOAL-010-AC-005: Auto-retry logic integrated with scheduler
+- INPUT_MATERIALS:
+  - `vat_vietnam/overrides/sales_invoice.py` (India reference)
+  - `vat_vietnam/utils/e_invoice.py` (India reference for flow)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/overrides/sales_invoice.py`, `hooks.py`
+- REQUIRED_SURFACES: Frappe doc_event overrides (Python)
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Python overrides; owner: vat_vietnam/overrides/sales_invoice.py; proof_needed: method signatures, hook registration; evidence: pending; status: missing`
+- CONSTRAINTS: Must match Frappe doc_event contract; use enqueue_after_commit for API calls
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-003, GP-GOAL-005, GP-GOAL-006, GP-GOAL-008, GP-GOAL-009`
+- VERIFICATION:
+  - command/check: Structural verification (file exists, methods defined, hooks registered)
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Real GDT API behavior may differ from mock; adjust after sandbox testing
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-overrides-si`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-011: Sales Invoice client scripts — e-invoice actions UI
+
+- STATUS: `TODO`
+- PRIORITY: `P1`
+- SOURCE: `user`
+- GOAL_TYPE: `user-capability`
+- PRIMARY_OUTCOME: ERPNext operator can trigger e-invoice actions (Submit to GDT, Cancel e-Invoice, Check Status) from the Sales Invoice form in Frappe Desk.
+- USER_OUTCOME: The ERPNext operator will be able to submit invoices to GDT and manage e-invoice lifecycle from the Sales Invoice form.
+- USER_STORY: As an ERPNext operator, I want to submit an e-invoice to Tổng cục Thuế directly from the Sales Invoice form and see its status, so that I can manage the invoicing workflow efficiently.
+- TECHNICAL_OUTCOME: `vat_vietnam/client_scripts/sales_invoice.js` adds buttons/actions to Sales Invoice form: Submit to GDT, Cancel e-Invoice, Check Status. Displays einvoice_status with color-coded indicator. Updated from India's client scripts with VN-specific actions and statuses.
+- TECHNICAL_RATIONALE: India's sales_invoice.js client script provides the UI pattern for e-invoice actions. Vietnam needs same pattern but with GDT-specific actions and VN status indicators.
+- ENABLES_GOALS: `GP-GOAL-010`
+- GOAL_FOR_GDA: Implement and verify that the Sales Invoice form has GDT e-invoice action buttons and status display.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Copy India''s sales_invoice.js as base template`
+  - `slice 2: Replace India e-invoice actions (Generate IRN, Cancel IRN) with VN actions (Gửi CQT, Hủy HĐ, Kiểm tra trạng thái)`
+  - `slice 3: Update status display to show VN statuses with appropriate colors`
+  - `slice 4: Add conditional visibility (only show when TaxDepartmentConfig.enable_e_invoice)`
+  - `slice 5: Register client script in hooks.py doctype_js for Sales Invoice`
+  - `slice 6: Update sales_invoice_list.js for list view e-invoice status column`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `sales_invoice.js updated | grep 'Gửi CQT\|Hủy HĐ' client_scripts/sales_invoice.js | pending`
+  - `Status display logic | grep 'einvoice_status' client_scripts/sales_invoice.js | pending`
+  - `hooks.py registers JS | grep 'Sales Invoice' hooks.py | grep 'client_scripts' | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: JS file contains VN-specific action labels and status values
+  - broader check: Would need running ERPNext with bench to verify UI rendering
+  - exact blocker: Cannot verify UI in browser without Frappe bench + site
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies. Client script must be registered in hooks.py.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- UI_UX_QUALITY_BAR: `standard Frappe Desk conventions`
+- UI_UX_COMPLETION_CHECKLIST:
+  - `workflow clarity: pending — buttons must be clearly labeled in Vietnamese`
+  - `theme consistency: not-applicable-with-evidence (Frappe Desk default)`
+  - `visual hierarchy and spacing: pending — status indicator must be visible but not intrusive`
+  - `responsive layout: not-applicable-with-evidence (Frappe Desk handles this)`
+  - `empty/loading/error/success states: pending — each status must have distinct visual treatment`
+  - `accessibility basics: not-applicable-with-evidence (Frappe Desk framework)`
+  - `copy and localization fit: pending — all labels in Vietnamese`
+  - `no overlap/overflow: not-applicable-with-evidence`
+  - `runtime/screenshot proof: pending — would need running ERPNext`
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-011-AC-001: Sales Invoice form shows "Gửi CQT" and "Hủy HĐ" action buttons
+  - GP-GOAL-011-AC-002: einvoice_status field displayed with color-coded indicator (Chờ gửi = yellow, Đã gửi = green, Lỗi = red, etc.)
+  - GP-GOAL-011-AC-003: Actions conditionally shown based on current einvoice_status
+  - GP-GOAL-011-AC-004: List view shows e-invoice status column
+- INPUT_MATERIALS:
+  - `vat_vietnam/client_scripts/sales_invoice.js` (India reference)
+  - `vat_vietnam/client_scripts/sales_invoice_list.js` (India reference)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/client_scripts/`
+- REQUIRED_SURFACES: Frappe Desk UI (JavaScript client scripts)
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Frappe Desk client script; owner: vat_vietnam/client_scripts/sales_invoice.js; proof_needed: JS content with VN labels, hooks registration; evidence: pending; status: missing`
+- CONSTRAINTS: Match Frappe client script conventions; all labels in Vietnamese
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-006`
+- VERIFICATION:
+  - command/check: grep for VN labels in JS, verify hooks.py registration
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Frappe Desk UI conventions may differ in v16
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-client-si`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-012: Digital signature integration — mock first, real signing later
+
+- STATUS: `TODO`
+- PRIORITY: `P1`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: `vat_vietnam/utils/signing.py` provides a pluggable digital signature interface with mock implementation and a provider abstraction layer for future VNPT/Viettel/BKAV CA integration.
+- USER_OUTCOME: N/A — backend signature is transparent to the operator.
+- USER_STORY: N/A - technical-oriented goal
+- TECHNICAL_OUTCOME: Signing module defines `SigningProvider` abstract interface and `MockSigningProvider` implementing it. XML generator calls `sign_xml(xml_string)` which returns signed XML. Provider is configured via TaxDepartmentConfig. Real providers (VNPT, Viettel, BKAV) to be added later.
+- TECHNICAL_RATIONALE: India does not embed digital signatures in e-invoice payload (India uses NIC portal signing). Vietnam requires XAdES digital signature on XML. Mock implementation enables development and testing without real certificates.
+- ENABLES_GOALS: `GP-GOAL-009, GP-GOAL-010`
+- GOAL_FOR_GDA: Implement pluggable digital signature module with mock provider.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Define SigningProvider abstract base class with sign_xml() interface`
+  - `slice 2: Implement MockSigningProvider (returns unsigned XML + placeholder signature element)`
+  - `slice 3: Integrate with XML generator (call signing before GDT submission)`
+  - `slice 4: Add signer_config to TaxDepartmentConfig (provider type, credentials reference)`
+  - `slice 5: Write provider selection logic (factory pattern based on config)`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `signing.py exists | ls utils/signing.py | pending`
+  - `SigningProvider ABC defined | grep 'class SigningProvider' signing.py | pending`
+  - `MockSigningProvider implemented | grep 'class MockSigningProvider' signing.py | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Import test + mock sign_xml returns XML string with signature element
+  - broader check: N/A without real certificate
+  - exact blocker: Real signing requires certificate from VN provider
+- HARD_STOP_GATES:
+  - `missing access/credentials: Real signing requires digital certificate and provider API access`
+- ANTI_FALSE_DONE_GATE: `Do not mark DONE unless mock signing works end to end with XML generator. Real provider integration is a separate future goal.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-012-AC-001: SigningProvider abstract interface defined
+  - GP-GOAL-012-AC-002: MockSigningProvider returns XML with signature placeholder
+  - GP-GOAL-012-AC-003: XML generator integrates signing step
+  - GP-GOAL-012-AC-004: Provider configurable via TaxDepartmentConfig
+- INPUT_MATERIALS:
+  - Circular 78 XAdES signature requirements
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/utils/signing.py`
+- REQUIRED_SURFACES: Python utility module
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Python module; owner: vat_vietnam/utils/signing.py; proof_needed: import test, mock sign_xml returns valid string; evidence: pending; status: missing`
+- CONSTRAINTS: Provider abstraction must support future real providers
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-003, GP-GOAL-009`
+- VERIFICATION:
+  - command/check: Import + mock test
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Real XAdES signing is complex (key management, certificate chains); mock is placeholder
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-signing`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-013: Vietnam e-invoice print format — Circular 78 template
+
+- STATUS: `TODO`
+- PRIORITY: `P1`
+- SOURCE: `user`
+- GOAL_TYPE: `user-capability`
+- PRIMARY_OUTCOME: ERPNext generates a Vietnam-compliant e-invoice print format (Hóa đơn GTGT mẫu 01GTKT0/001) with QR code, digital signature watermark, and all required Circular 78 fields.
+- USER_OUTCOME: ERPNext operator can print or export a Vietnam-compliant e-invoice in the official format.
+- USER_STORY: As an ERPNext operator, I want to print an e-invoice in the official Vietnam format (mẫu 01GTKT0/001) with QR code and all required information, so that it complies with tax authority requirements.
+- TECHNICAL_OUTCOME: `vat_vietnam/print_format/e_invoice/` contains Jinja + HTML template for Vietnam e-invoice print layout. Includes QR code rendering (via qrcode lib or JS), digital signature watermark area, form_number/series display, and all mandated fields per Circular 78.
+- TECHNICAL_RATIONALE: India's e_invoice print format generates India-specific layout with GSTIN, HSN, IRN, etc. Vietnam requires a completely different layout per Circular 78 template.
+- ENABLES_GOALS: N/A
+- GOAL_FOR_GDA: Implement and verify that the Vietnam e-invoice print format renders correctly with all required fields.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Create print format JSON metadata (doctype: Sales Invoice, format name)`
+  - `slice 2: Create HTML template with Circular 78 layout skeleton`
+  - `slice 3: Add seller info section (company, MST, address, phone, bank)`
+  - `slice 4: Add buyer info section`
+  - `slice 5: Add items table with tax breakdown`
+  - `slice 6: Add QR code rendering (using qrcode library via Jinja filter)`
+  - `slice 7: Add digital signature placeholder area`
+  - `slice 8: Register jinja methods for QR code generation in hooks.py`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `Print format JSON exists | ls print_format/e_invoice/ | pending`
+  - `HTML template exists | ls print_format/e_invoice/*.html | pending`
+  - `QR code logic | grep 'qr_code\|qrcode' print_format/ or hooks.py jinja methods | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: HTML template renders valid HTML with all required sections
+  - broader check: Would need ERPNext to view rendered print format
+  - exact blocker: Cannot render in browser without Frappe bench
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- UI_UX_QUALITY_BAR: `Circular 78 compliance; must match official template layout`
+- UI_UX_COMPLETION_CHECKLIST:
+  - `workflow clarity: pending — print layout must follow official Circular 78 template`
+  - `theme consistency: not-applicable-with-evidence (official tax template)`
+  - `visual hierarchy and spacing: pending — sections clearly separated per Circular 78`
+  - `responsive layout: pending — printable on A4 paper`
+  - `empty/loading/error/success states: not-applicable-with-evidence`
+  - `accessibility basics: not-applicable-with-evidence`
+  - `copy and localization fit: pending — all labels in Vietnamese`
+  - `no overlap/overflow: pending — must not overflow A4 page`
+  - `runtime/screenshot proof: pending — would need running ERPNext`
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-013-AC-001: Print format renders all required Circular 78 fields
+  - GP-GOAL-013-AC-002: QR code displayed for invoice lookup
+  - GP-GOAL-013-AC-003: Digital signature area present
+  - GP-GOAL-013-AC-004: Form number and series displayed in header
+  - GP-GOAL-013-AC-005: All labels in Vietnamese
+- INPUT_MATERIALS:
+  - Circular 78/2021/TT-BTC e-invoice template specification
+  - `vat_vietnam/print_format/e_invoice/` (India reference, to be rewritten)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/print_format/e_invoice/`
+- REQUIRED_SURFACES: Frappe Print Format (JSON + HTML + Jinja)
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Print format; owner: vat_vietnam/print_format/e_invoice/; proof_needed: valid HTML template with VN sections; evidence: pending; status: missing`
+- CONSTRAINTS: A4 page layout; Circular 78 compliance; Vietnamese labels
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-006`
+- VERIFICATION:
+  - command/check: HTML validity check
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Exact Circular 78 layout may require adjustment after review by tax expert
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-print-format`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-014: VAT Vietnam workspace — Frappe Desk dashboard
+
+- STATUS: `TODO`
+- PRIORITY: `P1`
+- SOURCE: `user`
+- GOAL_TYPE: `user-capability`
+- PRIMARY_OUTCOME: ERPNext has a "VAT Vietnam" workspace with dashboard cards showing e-invoice pending/submitted/error counts, quick action buttons, and links to reports.
+- USER_OUTCOME: The ERPNext operator will see a VAT Vietnam dashboard with e-invoice status overview and quick access to actions and reports.
+- USER_STORY: As an ERPNext operator, I want to see a VAT Vietnam dashboard showing how many e-invoices are pending, submitted, or errored, so that I can quickly manage the e-invoicing workflow.
+- TECHNICAL_OUTCOME: `vat_vietnam/workspace/vat_vietnam/` contains workspace JSON defining cards (Pending Today, Submitted Today, Errors Today), shortcuts (Submit Batch, GDT Status Check), links (EInvoiceLog, TaxDepartmentConfig), and number cards (einvoice counts by status).
+- TECHNICAL_RATIONALE: India's GST workspace provides the UI pattern with cards, shortcuts, and number cards. Vietnam needs the same pattern with GDT-specific metrics.
+- ENABLES_GOALS: N/A
+- GOAL_FOR_GDA: Implement and verify the VAT Vietnam workspace in Frappe Desk.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Copy India workspace JSON as structure template`
+  - `slice 2: Replace India cards/charts with VN e-invoice metrics`
+  - `slice 3: Add shortcuts to EInvoiceLog, TaxDepartmentConfig, Sales Invoice list`
+  - `slice 4: Define number cards for status counts`
+  - `slice 5: Register workspace in hooks.py (app_home)`
+  - `slice 6: Update app icon and branding (Vietnam flag or VN tax logo)`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `Workspace JSON exists | ls workspace/vat_vietnam/ | pending`
+  - `Dashboard cards defined | grep 'Pending\|Submitted\|Error' workspace JSON | pending`
+  - `app_home set in hooks.py | grep 'app_home' hooks.py | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Workspace JSON is valid with VN-specific cards
+  - broader check: Would need running ERPNext to view workspace
+  - exact blocker: Cannot verify workspace rendering without Frappe bench
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- UI_UX_COMPLETION_CHECKLIST:
+  - `workflow clarity: pending — dashboard should show actionable metrics`
+  - `theme consistency: not-applicable-with-evidence (Frappe Desk)`
+  - `visual hierarchy and spacing: pending — cards organized by priority`
+  - `responsive layout: not-applicable-with-evidence (Frappe Desk)`
+  - `empty/loading/error/success states: pending — cards for zero counts`
+  - `accessibility basics: not-applicable-with-evidence`
+  - `copy and localization fit: pending — all labels in Vietnamese`
+  - `no overlap/overflow: not-applicable-with-evidence`
+  - `runtime/screenshot proof: pending`
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-014-AC-001: Workspace shows Pending, Submitted, Error e-invoice counts
+  - GP-GOAL-014-AC-002: Quick action to view EInvoiceLog and TaxDepartmentConfig
+  - GP-GOAL-014-AC-003: Workspace set as app_home in hooks.py
+  - GP-GOAL-014-AC-004: All labels in Vietnamese
+- INPUT_MATERIALS:
+  - `vat_vietnam/workspace/gst_india/` (India reference)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/workspace/`
+- REQUIRED_SURFACES: Frappe Desk Workspace (JSON)
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Workspace; owner: vat_vietnam/workspace/vat_vietnam/; proof_needed: valid JSON with VN cards; evidence: pending; status: missing`
+- CONSTRAINTS: Match Frappe workspace conventions; Vietnamese labels
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-005`
+- VERIFICATION:
+  - command/check: JSON validity check
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Number card queries may need adjustment for ERPNext v16
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-workspace`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-015: Scheduler jobs — auto-retry, auto-generate, certificate expiry check
+
+- STATUS: `TODO`
+- PRIORITY: `P2`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: Frappe scheduler cron jobs handle auto-retry of failed GDT submissions, auto-generate on submit (when configured), and certificate expiry warnings.
+- USER_OUTCOME: Failed e-invoice submissions are automatically retried without operator intervention.
+- USER_STORY: As an ERPNext operator, I want failed e-invoice submissions to be automatically retried so that I don''t have to manually resubmit each failed invoice.
+- TECHNICAL_OUTCOME: `vat_vietnam/utils/e_invoice.py` implements retry logic and hooks into Frappe scheduler with cron entries in hooks.py for: retry failed submissions (every 5 min), auto-generate e-invoices (enqueued on Sales Invoice submit), certificate expiry check (daily). India's scheduler pattern is adapted for Vietnam flow.
+- TECHNICAL_RATIONALE: India has 5 cron jobs in hooks.py for e-invoice/e-waybill retry, GSTR download, and purchase reconciliation. Vietnam needs only e-invoice retry + certificate check (no e-waybill, no GSTR, no purchase reconciliation).
+- ENABLES_GOALS: `GP-GOAL-010`
+- GOAL_FOR_GDA: Implement scheduler cron jobs for Vietnam e-invoice automation.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Remove India cron jobs from hooks.py (e_waybill, gstr download, purchase reconciliation)`
+  - `slice 2: Add retry_e_invoice_generation cron (every 5 min)`
+  - `slice 3: Implement retry logic in utils/e_invoice.py (iterate EInvoiceLog with Failed status, call GDT API)`
+  - `slice 4: Add certificate_expiry_check cron (daily at 8am) — query MST certificates, warn if <30 days`
+  - `slice 5: Keep auto-generate pattern (triggered via Sales Invoice on_submit, not cron)`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `India cron jobs removed | grep 'scheduler_events' hooks.py (no India jobs) | pending`
+  - `Retry cron added | grep 'retry_e_invoice' hooks.py scheduler_events | pending`
+  - `Retry logic implemented | grep 'def retry' utils/e_invoice.py | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: hooks.py scheduler_events contains only VN jobs; retry function exists
+  - broader check: Would need running Frappe scheduler to verify
+  - exact blocker: Cannot verify scheduler runtime without Frappe bench
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-015-AC-001: India cron jobs removed from hooks.py
+  - GP-GOAL-015-AC-002: retry_e_invoice_generation cron registered (every 5 min)
+  - GP-GOAL-015-AC-003: Retry logic reads EInvoiceLog, calls GDT API, updates status
+  - GP-GOAL-015-AC-004: certificate_expiry_check warns when certificate <30 days from expiry
+- INPUT_MATERIALS:
+  - hooks.py `scheduler_events` section (India reference)
+  - `vat_vietnam/utils/e_invoice.py` (India reference for retry pattern)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/utils/e_invoice.py`, `hooks.py`
+- REQUIRED_SURFACES: Frappe scheduler (Python + hooks.py config)
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Scheduler; owner: utils/e_invoice.py + hooks.py; proof_needed: cron registration, retry function exists; evidence: pending; status: missing`
+- CONSTRAINTS: Follow Frappe scheduler conventions
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-005, GP-GOAL-008, GP-GOAL-010`
+- VERIFICATION:
+  - command/check: grep for cron entries and function definitions
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Retry logic depends on GDT API client working; mock mode may hide real failures
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-scheduler`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-016: Báo cáo tình hình sử dụng HĐĐT — e-invoice usage report
+
+- STATUS: `TODO`
+- PRIORITY: `P2`
+- SOURCE: `user`
+- GOAL_TYPE: `user-capability`
+- PRIMARY_OUTCOME: ERPNext has a Báo cáo tình hình sử dụng hóa đơn điện tử (e-invoice usage report) showing invoice counts by status, period, and company.
+- USER_OUTCOME: ERPNext operator can generate the mandatory e-invoice usage report for tax authority submission.
+- USER_STORY: As an ERPNext operator, I want to generate the Báo cáo tình hình sử dụng hóa đơn điện tử report so that I can submit it to the tax authority as required.
+- TECHNICAL_OUTCOME: `vat_vietnam/report/e_invoice_usage_report/` contains report JSON definition and Python query generating counts of e-invoices by period, status, form_number, and company with totals.
+- TECHNICAL_RATIONALE: India has GST-specific reports (GSTR-1, GST Sales Register). Vietnam requires different reports per Circular 78. This report is the primary periodic filing requirement.
+- ENABLES_GOALS: N/A
+- GOAL_FOR_GDA: Implement and verify the e-invoice usage report in Frappe.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Create report JSON metadata (name, doctype, filters, columns)`
+  - `slice 2: Implement Python query (fetch Sales Invoices with einvoice_status, grouped by period)`
+  - `slice 3: Define report columns (Period, Form Number, Series, Created, Submitted, Cancelled, Errors, Total)`
+  - `slice 4: Add filters (date range, company, form_number, status)`
+  - `slice 5: Register in hooks.py or report module`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `Report JSON exists | ls report/e_invoice_usage_report/ | pending`
+  - `Python query defined | grep 'def execute' report/e_invoice_usage_report/*.py | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Report JSON valid, Python query imports correctly
+  - broader check: Would need running ERPNext to execute report
+  - exact blocker: Cannot verify report output without Frappe bench + data
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- UI_UX_COMPLETION_CHECKLIST:
+  - `workflow clarity: pending — report columns must be Vietnamese-labeled`
+  - `theme consistency: not-applicable-with-evidence (Frappe Desk report view)`
+  - `visual hierarchy and spacing: not-applicable-with-evidence`
+  - `responsive layout: not-applicable-with-evidence (Frappe Desk)`
+  - `empty/loading/error/success states: pending — report handles empty results gracefully`
+  - `accessibility basics: not-applicable-with-evidence`
+  - `copy and localization fit: pending — all labels in Vietnamese`
+  - `no overlap/overflow: not-applicable-with-evidence`
+  - `runtime/screenshot proof: pending`
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-016-AC-001: Report shows e-invoice counts grouped by period
+  - GP-GOAL-016-AC-002: Report filters by date range, company, form_number
+  - GP-GOAL-016-AC-003: Columns show created, submitted, cancelled, error, total counts
+  - GP-GOAL-016-AC-004: All labels in Vietnamese
+- INPUT_MATERIALS:
+  - Circular 78 reporting requirements
+  - `vat_vietnam/report/` (India report pattern reference)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/report/e_invoice_usage_report/`
+- REQUIRED_SURFACES: Frappe Report (JSON + Python query)
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Report; owner: vat_vietnam/report/e_invoice_usage_report/; proof_needed: valid JSON, Python query; evidence: pending; status: missing`
+- CONSTRAINTS: Follow Frappe report conventions; Vietnamese labels
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-005, GP-GOAL-006`
+- VERIFICATION:
+  - command/check: JSON validity, Python import check
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Exact report format per GDT requirements may differ
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-report-usage`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-017: Bảng kê hóa đơn bán ra / mua vào — sales/purchase invoice listing report
+
+- STATUS: `TODO`
+- PRIORITY: `P2`
+- SOURCE: `user`
+- GOAL_TYPE: `user-capability`
+- PRIMARY_OUTCOME: ERPNext has Bảng kê hóa đơn bán ra and Bảng kê hóa đơn mua vào reports listing all sales/purchase e-invoices with GDT status, form numbers, and tax details.
+- USER_OUTCOME: ERPNext operator can export detailed invoice listings for tax filing and reconciliation.
+- USER_STORY: As an ERPNext operator, I want to generate Bảng kê hóa đơn bán ra and Bảng kê hóa đơn mua vào reports so that I have a complete listing of all invoices for tax filing purposes.
+- TECHNICAL_OUTCOME: Two report doctypes: `e_invoice_sales_listing` and `e_invoice_purchase_listing`, showing detailed invoice rows with date, number, form_number, series, customer/supplier, MST, amount, VAT, total, and einvoice_status.
+- TECHNICAL_RATIONALE: Standard Vietnam tax reporting requirement. India has GST Sales Register and GST Purchase Register which serve a similar purpose but with GST-specific columns.
+- ENABLES_GOALS: N/A
+- GOAL_FOR_GDA: Implement sales and purchase e-invoice listing reports.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Create sales listing report JSON + Python query`
+  - `slice 2: Create purchase listing report JSON + Python query`
+  - `slice 3: Define columns (invoice date, number, form_number, series, party name, MST, amount before tax, VAT amount, total, einvoice_status)`
+  - `slice 4: Add filters (date range, company, customer/supplier, status)`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `Sales listing report exists | ls report/e_invoice_sales_listing/ | pending`
+  - `Purchase listing report exists | ls report/e_invoice_purchase_listing/ | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Report JSON valid, Python import check
+  - broader check: Would need running ERPNext
+  - exact blocker: Cannot verify report execution without bench
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-017-AC-001: Sales listing report shows all sales e-invoices with VN-specific columns
+  - GP-GOAL-017-AC-002: Purchase listing report shows all purchase invoices
+  - GP-GOAL-017-AC-003: Both reports filterable by date, company, party, status
+  - GP-GOAL-017-AC-004: All labels in Vietnamese
+- INPUT_MATERIALS:
+  - `vat_vietnam/report/gst_sales_register/` and `gst_purchase_register/` (India pattern reference)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/report/e_invoice_sales_listing/`, `e_invoice_purchase_listing/`
+- REQUIRED_SURFACES: Frappe Reports
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Reports; owner: vat_vietnam/report/; proof_needed: valid JSON + Python query; evidence: pending; status: missing`
+- CONSTRAINTS: Vietnamese labels; follow Frappe report conventions
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-005, GP-GOAL-006, GP-GOAL-007`
+- VERIFICATION:
+  - command/check: Structural verification
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Purchase invoice e-invoice status depends on how purchase e-invoicing works in VN
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-report-listings`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+### GP-GOAL-018: Multi-tenant setup — global config and installation docs
+
+- STATUS: `TODO`
+- PRIORITY: `P2`
+- SOURCE: `user`
+- GOAL_TYPE: `technical-enabler`
+- PRIMARY_OUTCOME: Vietnam Compliance supports multi-tenant deployment via Frappe multi-site architecture with global GDT API config, per-company MST + digital certificate, and documented setup instructions.
+- USER_OUTCOME: Platform admin can deploy Vietnam Compliance across multiple client sites with shared infrastructure and per-client tax identities.
+- USER_STORY: As a platform admin, I want to deploy Vietnam Compliance for multiple client companies so that each client can issue e-invoices under their own MST, with configuration managed centrally.
+- TECHNICAL_OUTCOME: `vat_vietnam/install.py` supports global config via `bench set-config -g` for shared GDT API URL. Per-company MST, digital certificate, and credentials stored in Company doctype. Multi-site setup docs in `docs/multi-site-setup.md`.
+- TECHNICAL_RATIONALE: India Compliance's multi-site setup doc describes using `bench set-config -g ic_api_secret` for shared API secret across sites. Vietnam can use the same pattern for GDT API URL and global settings.
+- ENABLES_GOALS: N/A
+- GOAL_FOR_GDA: Implement multi-tenant configuration support and write setup documentation.
+- FLASH_EXECUTION_KERNEL: `applies; read first, state assumptions, slice small, verify each slice, update Evidence Map, continue unless a hard stop gate applies`
+- SLICE_PLAN:
+  - `slice 1: Implement global config support in install.py (gdt_api_url, sandbox_mode)`
+  - `slice 2: Verify per-company MST + credential fields already exist (from GP-GOAL-004, GP-GOAL-007)`
+  - `slice 3: Write multi-site setup documentation`
+  - `slice 4: Add disable/enable account page pattern from India Compliance`
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+  - `Global config support | grep 'set-config' install.py | pending`
+  - `Multi-site docs | ls docs/multi-site-setup.md | pending`
+- VERIFICATION_FLOOR:
+  - targeted check: Global config keys referenced in code; docs exist
+  - broader check: Would need bench to test `bench set-config -g`
+  - exact blocker: Cannot test bench commands without Frappe installation
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate applies.`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `not-started`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- ACCEPTANCE_CRITERIA:
+  - GP-GOAL-018-AC-001: Global config key support in install.py for shared GDT settings
+  - GP-GOAL-018-AC-002: Per-company MST + credentials stored on Company doctype
+  - GP-GOAL-018-AC-003: Multi-site setup documentation written
+  - GP-GOAL-018-AC-004: Account disable pattern ported from India Compliance
+- INPUT_MATERIALS:
+  - `docs/developer-guide/multi-site-setup` from India Compliance (reference)
+  - `install.py` (India reference)
+- TARGET_SCOPE: `vietnam_compliance/vat_vietnam/install.py`, `docs/`
+- REQUIRED_SURFACES: Installation script + documentation
+- SURFACE_COMPLETION_CHECKLIST:
+  - `surface: Install script; owner: vat_vietnam/install.py; proof_needed: global config pattern; evidence: pending; status: missing`
+  - `surface: Documentation; owner: docs/multi-site-setup.md; proof_needed: doc file exists with setup steps; evidence: pending; status: missing`
+- CONSTRAINTS: Follow India Compliance''s multi-site pattern
+- DEPENDENCIES: `GP-GOAL-001, GP-GOAL-003, GP-GOAL-004, GP-GOAL-007`
+- VERIFICATION:
+  - command/check: Structural verification of install.py and doc file
+  - AC-to-evidence mapping: to be filled
+  - foundation/completeness audit: to be filled
+  - residual risks: Actual multi-tenant deployment needs testing with real Frappe sites
+- GDA_GOAL_FOLDER: `docs/goals/vietnam-compliance-multi-tenant`
+- RESULT_SUMMARY:
+- LAST_UPDATED: 2026-06-27T12:00:00Z
+
+## Suggested Goals
+
+### GP-SUGGESTED-001: Automated tests for e-invoice flow
+
+- STATUS: `SUGGESTED`
+- PRIORITY: `P2`
+- SOURCE: `agent`
+- REASON: India Compliance has only 2 test files (~70K LOC). No automated tests for e-invoice generation, API integration, XML generation, or override behavior. Adding tests would prevent regressions and make the codebase more maintainable.
+- GOAL_TYPE: `test/quality`
+- PRIMARY_OUTCOME: `tests/` directory contains pytest/Frappe unit tests for e-invoice XML generation, Sales Invoice override hooks, and GDT API client mock integration.
+- USER_OUTCOME: `N/A - technical-oriented`
+- USER_STORY: `N/A`
+- TECHNICAL_OUTCOME: Test suite covering: XML generator output validation, Sales Invoice on_submit hook behavior, GDT API mock responses, EInvoiceLog state transitions, custom field creation, and scheduler job logic.
+- TECHNICAL_RATIONALE: The India Compliance codebase has almost no test coverage. Adding tests early prevents bugs and makes the conversion safer.
+- ENABLES_GOALS: `GP-GOAL-008, GP-GOAL-009, GP-GOAL-010`
+- GOAL_FOR_GDA: Add automated tests for core e-invoice modules.
+- FLASH_EXECUTION_KERNEL: `applies if accepted as required work`
+- SLICE_PLAN: TBD after acceptance
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+- VERIFICATION_FLOOR: pytest run passes
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard Anti-False-DONE gate`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `suggested`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- DEPENDS_ON: `GP-GOAL-001`
+- USER_DECISION_NEEDED: `yes`
+
+### GP-SUGGESTED-002: GDT sandbox mode for integration testing
+
+- STATUS: `SUGGESTED`
+- PRIORITY: `P2`
+- SOURCE: `agent`
+- REASON: The GDT provides a test/sandbox environment for e-invoice integration. Dedicated sandbox mode with step-by-step testing guide would help validate the integration before production use.
+- GOAL_TYPE: `test/quality`
+- PRIMARY_OUTCOME: Sandbox mode is fully functional with documented testing steps, allowing developers and QA to validate e-invoice submission, status check, and cancellation against GDT''s test environment.
+- USER_OUTCOME: N/A
+- TECHNICAL_OUTCOME: Sandbox configuration in TaxDepartmentConfig, sandbox-specific API endpoints, testing guide documentation, and sample test data.
+- TECHNICAL_RATIONALE: India Compliance has sandbox mode for NIC portal. Vietnam should have the same for GDT.
+- ENABLES_GOALS: `GP-GOAL-008`
+- GOAL_FOR_GDA: Configure and document GDT sandbox testing workflow.
+- FLASH_EXECUTION_KERNEL: `applies if accepted as required work`
+- SLICE_PLAN: TBD
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+- VERIFICATION_FLOOR: Sandbox submit returns realistic mock response
+- HARD_STOP_GATES: Requires GDT sandbox credentials
+- ANTI_FALSE_DONE_GATE: `Standard`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `suggested`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- DEPENDS_ON: `GP-GOAL-003, GP-GOAL-008`
+- USER_DECISION_NEEDED: `yes`
+
+### GP-SUGGESTED-003: API usage dashboard for multi-tenant operators
+
+- STATUS: `SUGGESTED`
+- PRIORITY: `P3`
+- SOURCE: `agent`
+- REASON: Multi-tenant SaaS operators need visibility into API usage per client: submission counts, error rates, rate limit warnings. This is not in India Compliance but would be valuable for a commercial e-invoicing platform.
+- GOAL_TYPE: `user-capability`
+- PRIMARY_OUTCOME: Platform admin can view per-client API usage metrics on a dashboard.
+- USER_OUTCOME: The platform admin will be able to monitor API usage and error rates per client.
+- USER_STORY: As a platform admin, I want to see per-client API usage metrics so that I can monitor performance, identify problematic clients, and plan capacity.
+- TECHNICAL_OUTCOME: New dashboard or report showing API call counts, error rates, and rate limit status per company/site over time periods.
+- TECHNICAL_RATIONALE: Commercial SaaS platforms need usage monitoring. Not in scope of basic compliance app but high value for operators.
+- ENABLES_GOALS: `GP-GOAL-018`
+- GOAL_FOR_GDA: Build API usage monitoring dashboard for multi-tenant operators.
+- FLASH_EXECUTION_KERNEL: `applies if accepted as required work`
+- SLICE_PLAN: TBD
+- EVIDENCE_MAP:
+  - `Requirement | Evidence | Verification command/result | Status`
+- VERIFICATION_FLOOR: TBD
+- HARD_STOP_GATES: `N/A`
+- ANTI_FALSE_DONE_GATE: `Standard`
+- PROGRESS_PERCENT: `0%`
+- PROGRESS_SOURCE: `suggested`
+- PROGRESS_UPDATED: 2026-06-27T12:00:00Z
+- DEPENDS_ON: `GP-GOAL-005, GP-GOAL-018`
+- USER_DECISION_NEEDED: `yes`
+
+## Archived Goals Index
+
+No archived goals — this is the initial goals file creation.
+
+## Goal Change Log
+
+| Time | Goal Id | Change | Reason | Evidence |
+|---|---|---|---|---|
+| 2026-06-27 12:00 | GP-GOAL-001 through GP-GOAL-018 | created | initial goals from PLAN.md + Issue #9 | user supplied via direct instructions |
+| 2026-06-27 12:00 | GP-SUGGESTED-001 through GP-SUGGESTED-003 | suggested | agent-inferred completeness gaps | research evidence in intake log |
+
+## Current Pack Execution Prompt
+
+```text
+Run /Users/thanhson/Workspace/abn.ai.swe/docs/META/PR-GP-Goals-Packs/PR-GP-Goals-Packs-master-prompt.md from the target repo. It will auto-discover docs/goals-packs/*/01-goals-file.md and execute or continue the pack.
+```
+
+Internal queue resume artifact: `docs/goals-packs/vietnam-compliance/03-goal-queue.md`
